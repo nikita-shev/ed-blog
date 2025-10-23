@@ -1,0 +1,15 @@
+import { Request, Response } from 'express';
+import { blogsRepository } from '../../repositories/blogs.repository';
+import { HttpStatus } from '../../../core/constants/http-statuses';
+import { mapToBlogOutput } from '../mappers/mapToBlogOutput';
+import { BlogOutputDto } from '../../dto';
+
+export function getBlogHandler(req: Request<{ id: string }>, res: Response<BlogOutputDto>) {
+    const blog = blogsRepository.findBlogById(+req.params.id);
+
+    if (!blog) {
+        return res.sendStatus(HttpStatus.NotFound);
+    }
+
+    res.status(HttpStatus.Ok).send(mapToBlogOutput(blog));
+}

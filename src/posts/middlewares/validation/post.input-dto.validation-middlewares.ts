@@ -35,8 +35,8 @@ const blogIdValidation = body('blogId')
     .withMessage('blogId must be a string');
 
 export const postInputDtoValidation = [
-    titleValidation,
     shortDescriptionValidation,
+    titleValidation,
     contentValidation,
     blogIdValidation
 ];

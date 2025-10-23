@@ -29,4 +29,4 @@ const urlValidation = body('websiteUrl')
     .matches(url.pattern)
     .withMessage('websiteUrl is incorrect');
 
-export const blogInputDtoValidation = [nameValidation, descriptionValidation, urlValidation];
+export const blogInputDtoValidation = [urlValidation, nameValidation, descriptionValidation];

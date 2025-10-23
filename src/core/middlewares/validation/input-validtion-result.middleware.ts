@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { FieldValidationError, ValidationError, validationResult } from 'express-validator';
-import { Error, ErrorMessages } from '../../types/error';
+import { Error, ErrorsMessages } from '../../types/error';
 import { HttpStatus } from '../../constants/http-statuses';
 
 const formatError = (error: ValidationError): Error => {
@@ -16,7 +16,7 @@ export function inputValidationResultMiddleware(req: Request, res: Response, nex
     const errors = validationResult(req).formatWith(formatError).array({ onlyFirstError: true });
 
     if (errors.length > 0) {
-        return res.status(HttpStatus.BadRequest).send({ errorMessages: errors } as ErrorMessages);
+        return res.status(HttpStatus.BadRequest).send({ errorsMessages: errors } as ErrorsMessages);
     }
 
     next();

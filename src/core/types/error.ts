@@ -3,6 +3,6 @@ export interface Error {
     field: string;
 }
 
-export interface ErrorMessages {
-    errorMessages: Error[];
+export interface ErrorsMessages {
+    errorsMessages: Error[];
 }

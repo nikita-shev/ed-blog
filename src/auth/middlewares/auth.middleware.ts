@@ -5,7 +5,7 @@ const USERNAME = 'admin';
 const PASSWORD = 'qwerty';
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
-    const auth = req.headers.authorization;
+    const auth = req.headers['authorization'];
     if (!auth) {
         return res.sendStatus(HttpStatus.Unauthorized);
     }

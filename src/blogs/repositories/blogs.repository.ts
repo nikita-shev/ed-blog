@@ -1,17 +1,14 @@
 import { Blog } from '../types/blog.types';
 import { BlogInputDto } from '../dto';
-
-let blogs: Blog[] = [
-    { id: 1, name: 'Test Blog', description: 'Test desc', websiteUrl: 'https://google.com' }
-];
+import { db } from '../../db/db';
 
 export const blogsRepository = {
     findBlog(): Blog[] {
-        return blogs;
+        return db.blogs;
     },
 
     findBlogById(id: number): Blog | null {
-        const blog = blogs.find((b) => b.id === id);
+        const blog = db.blogs.find((b) => b.id === id);
 
         if (!blog) {
             return null;
@@ -26,12 +23,12 @@ export const blogsRepository = {
             ...data
         };
 
-        blogs.push(newBlog);
+        db.blogs.push(newBlog);
         return newBlog;
     },
 
     updateBlog(id: number, data: BlogInputDto): boolean {
-        const blog = blogs.find((b) => b.id === id);
+        const blog = db.blogs.find((b) => b.id === id);
 
         if (!blog) {
             return false;
@@ -47,13 +44,13 @@ export const blogsRepository = {
     },
 
     deleteBlog(id: number): boolean {
-        const blog = blogs.find((b) => b.id === id);
+        const blog = db.blogs.find((b) => b.id === id);
 
         if (!blog) {
             return false;
         }
 
-        blogs = blogs.filter((b) => b.id !== id);
+        db.blogs = db.blogs.filter((b) => b.id !== id);
         return true;
     }
 };

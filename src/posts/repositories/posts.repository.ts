@@ -1,24 +1,14 @@
 import { Post } from '../types/posts.types';
 import { PostInputDto } from '../dto';
-
-let db: Post[] = [
-    {
-        id: 1,
-        blogId: 1,
-        blogName: 'Test',
-        title: 'Text',
-        content: 'qwerty',
-        shortDescription: 'Bla-bla-bla'
-    }
-];
+import { db } from '../../db/db';
 
 export const postsRepository = {
     findPosts(): Post[] {
-        return db;
+        return db.posts;
     },
 
     findPostById(id: number): Post | null {
-        const post = db.find((p) => p.id === id);
+        const post = db.posts.find((p) => p.id === id);
 
         if (!post) {
             return null;
@@ -30,12 +20,12 @@ export const postsRepository = {
     createPost(data: PostInputDto): Post {
         const newPost: Post = { id: +new Date(), blogName: 'Test', ...data, blogId: +data.blogId };
 
-        db.push(newPost);
+        db.posts.push(newPost);
         return newPost;
     },
 
     updatePost(id: number, data: PostInputDto): boolean {
-        const post = db.find((p) => p.id === id);
+        const post = db.posts.find((p) => p.id === id);
 
         if (!post) {
             return false;
@@ -51,13 +41,13 @@ export const postsRepository = {
     },
 
     deletePost(id: number): boolean {
-        const post = db.find((p) => p.id === id);
+        const post = db.posts.find((p) => p.id === id);
 
         if (!post) {
             return false;
         }
 
-        db = db.filter((p) => p.id !== id);
+        db.posts = db.posts.filter((p) => p.id !== id);
         return true;
     }
 };

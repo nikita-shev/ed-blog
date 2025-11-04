@@ -5,8 +5,11 @@ import { blogsRepository } from '../../repositories/blogs.repository';
 import { HttpStatus } from '../../../core/constants/http-statuses';
 import { mapToBlogOutput } from '../mappers/mapToBlogOutput';
 
-export function createBlogHandler(req: Request<{}, {}, BlogInputDto>, res: Response<BlogOutputDto>) {
-    const newBlog = blogsRepository.createNewBlog(req.body);
+export async function createBlogHandler(
+    req: Request<{}, {}, BlogInputDto>,
+    res: Response<BlogOutputDto>
+) {
+    const newBlog = await blogsRepository.createNewBlog(req.body);
 
     res.status(HttpStatus.Created).send(mapToBlogOutput(newBlog));
 }

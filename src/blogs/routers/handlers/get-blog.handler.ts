@@ -4,8 +4,8 @@ import { HttpStatus } from '../../../core/constants/http-statuses';
 import { mapToBlogOutput } from '../mappers/mapToBlogOutput';
 import { BlogOutputDto } from '../../dto';
 
-export function getBlogHandler(req: Request<{ id: string }>, res: Response<BlogOutputDto>) {
-    const blog = blogsRepository.findBlogById(+req.params.id);
+export async function getBlogHandler(req: Request<{ id: string }>, res: Response<BlogOutputDto>) {
+    const blog = await blogsRepository.findBlogById(req.params.id);
 
     if (!blog) {
         return res.sendStatus(HttpStatus.NotFound);

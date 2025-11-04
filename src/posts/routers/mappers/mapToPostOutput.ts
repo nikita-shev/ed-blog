@@ -1,13 +1,14 @@
-import { Post } from '../../types/posts.types';
+import { PostWithId } from '../../types/posts.types';
 import { PostOutputDto } from '../../dto';
 
-export function mapToPostOutput(post: Post): PostOutputDto {
+export function mapToPostOutput(post: PostWithId): PostOutputDto {
     return {
-        id: `${post.id}`,
+        id: String(post._id),
         title: post.title,
         shortDescription: post.shortDescription,
         content: post.content,
-        blogId: `${post.blogId}`,
-        blogName: post.blogName
+        blogId: post.blogId,
+        blogName: post.blogName,
+        createdAt: post.createdAt
     };
 }

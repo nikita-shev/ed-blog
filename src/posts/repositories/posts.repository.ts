@@ -1,53 +1,33 @@
-import { Post } from '../types/posts.types';
+import { Post, PostWithId } from '../types/posts.types';
 import { PostInputDto } from '../dto';
-import { db } from '../../db/db';
+import { postCollection } from '../../db/db.config';
+import { ObjectId } from 'mongodb';
 
 export const postsRepository = {
-    findPosts(): Post[] {
-        return db.posts;
+    async findPosts(): Promise<PostWithId[]> {
+        return postCollection.find().toArray();
     },
 
-    findPostById(id: number): Post | null {
-        const post = db.posts.find((p) => p.id === id);
-
-        if (!post) {
-            return null;
-        }
-
-        return post;
+    async findPostById(id: string): Promise<PostWithId | null> {
+        return postCollection.findOne({ _id: new ObjectId(id) });
     },
 
-    createPost(data: PostInputDto): Post {
-        const newPost: Post = { id: +new Date(), blogName: 'Test', ...data, blogId: +data.blogId };
+    async createPost(data: PostInputDto): Promise<PostWithId> {
+        const newPost: Post = { blogName: 'Test', createdAt: new Date().toISOString(), ...data };
+        const insertResult = await postCollection.insertOne(newPost);
 
-        db.posts.push(newPost);
-        return newPost;
+        return { ...newPost, _id: insertResult.insertedId };
     },
 
-    updatePost(id: number, data: PostInputDto): boolean {
-        const post = db.posts.find((p) => p.id === id);
+    async updatePost(id: string, data: PostInputDto): Promise<boolean> {
+        const result = await postCollection.updateOne({ _id: new ObjectId(id) }, { $set: data });
 
-        if (!post) {
-            return false;
-        }
-
-        for (let key in post) {
-            if (key in data) {
-                // @ts-ignore
-                post[key] = data[key];
-            }
-        }
-        return true;
+        return result.matchedCount === 1;
     },
 
-    deletePost(id: number): boolean {
-        const post = db.posts.find((p) => p.id === id);
+    async deletePost(id: string): Promise<boolean> {
+        const result = await postCollection.deleteOne({ _id: new ObjectId(id) });
 
-        if (!post) {
-            return false;
-        }
-
-        db.posts = db.posts.filter((p) => p.id !== id);
-        return true;
+        return result.deletedCount === 1;
     }
 };

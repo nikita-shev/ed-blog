@@ -4,11 +4,11 @@ import { postsRepository } from '../../repositories/posts.repository';
 import { HttpStatus } from '../../../core/constants/http-statuses';
 import { mapToPostOutput } from '../mappers/mapToPostOutput';
 
-export function createPostHandler(
+export async function createPostHandler(
     req: Request<{}, {}, PostInputDto>,
     res: Response<PostOutputDto>
 ) {
-    const post = postsRepository.createPost(req.body);
+    const post = await postsRepository.createPost(req.body);
 
     res.status(HttpStatus.Created).send(mapToPostOutput(post));
 }

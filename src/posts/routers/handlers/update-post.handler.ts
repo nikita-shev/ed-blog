@@ -3,11 +3,11 @@ import { PostInputDto, PostOutputDto } from '../../dto';
 import { postsRepository } from '../../repositories/posts.repository';
 import { HttpStatus } from '../../../core/constants/http-statuses';
 
-export function updatePostHandler(
+export async function updatePostHandler(
     req: Request<{ id: string }, {}, PostInputDto>,
     res: Response<PostOutputDto>
 ) {
-    const result = postsRepository.updatePost(+req.params.id, req.body);
+    const result = await postsRepository.updatePost(req.params.id, req.body);
 
     if (!result) {
         return res.sendStatus(HttpStatus.NotFound);

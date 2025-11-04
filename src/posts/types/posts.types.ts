@@ -1,8 +1,12 @@
+import { WithId } from 'mongodb';
+
 export interface Post {
-    id: number;
     title: string;
     shortDescription: string;
     content: string;
-    blogId: number;
+    blogId: string;
     blogName: string;
+    createdAt: string;
 }
+
+export type PostWithId = WithId<Post>;

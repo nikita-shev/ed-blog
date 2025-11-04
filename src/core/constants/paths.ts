@@ -1,5 +1,5 @@
 export enum PATHS {
-    blogs = '/ht_02/api/blogs',
-    posts = '/ht_02/api/posts',
-    testing = '/ht_02/api/testing'
+    blogs = '/hometask_03/api/blogs',
+    posts = '/hometask_03/api/posts',
+    testing = '/hometask_03/api/testing'
 }

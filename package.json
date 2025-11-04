@@ -14,8 +14,10 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "dotenv": "^17.2.3",
         "express": "^5.1.0",
-        "express-validator": "^7.3.0"
+        "express-validator": "^7.3.0",
+        "mongodb": "^6.20.0"
     },
     "devDependencies": {
         "@darbitdev/prettier-config": "^0.0.1",

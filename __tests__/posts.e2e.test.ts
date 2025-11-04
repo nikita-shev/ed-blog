@@ -5,12 +5,14 @@ import { PATHS } from '../src/core/constants/paths';
 import { HttpStatus } from '../src/core/constants/http-statuses';
 import { BlogInputDto } from '../src/blogs/dto';
 import { PostInputDto } from '../src/posts/dto';
+import { runDB } from '../src/db/db.config';
 
 describe('Tests path "/blogs"', () => {
     const app = express();
     setupApp(app);
 
     beforeAll(async () => {
+        await runDB();
         await request(app).delete(`${PATHS.testing}/all-data`).expect(HttpStatus.NoContent);
     });
 
@@ -39,7 +41,12 @@ describe('Tests path "/blogs"', () => {
             .send(newPost);
         postId = response2.body.id;
         expect(response2.status).toBe(HttpStatus.Created);
-        expect(response2.body).toEqual({ id: expect.any(String), blogName: 'Test', ...newPost });
+        expect(response2.body).toEqual({
+            id: expect.any(String),
+            blogName: 'Test',
+            createdAt: expect.any(String),
+            ...newPost
+        });
 
         const incorrectData = {
             // title: '',
@@ -77,14 +84,26 @@ describe('Tests path "/blogs"', () => {
 
     it('test GET /posts/:id', async () => {
         const response = await request(app).get(`${PATHS.posts}/11e`);
-        expect(response.status).toBe(HttpStatus.NotFound);
+        expect(response.status).toBe(HttpStatus.BadRequest);
+        expect(response.body).toEqual({
+            errorsMessages: [
+                {
+                    field: 'id',
+                    message: 'id is incorrect'
+                }
+            ]
+        });
 
-        const response2 = await request(app).get(`${PATHS.posts}/${postId}`);
-        expect(response2.status).toBe(HttpStatus.Ok);
-        expect(response2.body.title).toBe('Title');
+        const testId = `1${postId.slice(1)}`;
+        const response2 = await request(app).get(`${PATHS.posts}/${testId}`);
+        expect(response2.status).toBe(HttpStatus.NotFound);
+
+        const response3 = await request(app).get(`${PATHS.posts}/${postId}`);
+        expect(response3.status).toBe(HttpStatus.Ok);
+        expect(response3.body.title).toBe('Title');
     });
 
-    it('test PUT /blogs/:id', async () => {
+    it('test PUT /posts/:id', async () => {
         const newData: PostInputDto = {
             title: 'Title2',
             shortDescription: 'shortDescription2',
@@ -99,13 +118,28 @@ describe('Tests path "/blogs"', () => {
             .put(`${PATHS.posts}/11ee`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(newData);
-        expect(response2.status).toBe(HttpStatus.NotFound);
+        expect(response2.status).toBe(HttpStatus.BadRequest);
+        expect(response2.body).toEqual({
+            errorsMessages: [
+                {
+                    field: 'id',
+                    message: 'id is incorrect'
+                }
+            ]
+        });
 
+        const testId = `1${postId.slice(1)}`;
         const response3 = await request(app)
+            .put(`${PATHS.posts}/${testId}`)
+            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+            .send(newData);
+        expect(response3.status).toBe(HttpStatus.NotFound);
+
+        const response4 = await request(app)
             .put(`${PATHS.posts}/${postId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(newData);
-        expect(response3.status).toBe(HttpStatus.NoContent);
+        expect(response4.status).toBe(HttpStatus.NoContent);
 
         const content = (() => [...new Array(1001).fill('i')].join(' '))();
         const incorrectData = {
@@ -114,13 +148,13 @@ describe('Tests path "/blogs"', () => {
             content
             // blogId: 222
         };
-        const response4 = await request(app)
+        const response5 = await request(app)
             .put(`${PATHS.posts}/${postId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(incorrectData);
 
-        expect(response4.status).toBe(HttpStatus.BadRequest);
-        expect(response4.body).toEqual({
+        expect(response5.status).toBe(HttpStatus.BadRequest);
+        expect(response5.body).toEqual({
             errorsMessages: [
                 {
                     field: 'title',
@@ -149,12 +183,26 @@ describe('Tests path "/blogs"', () => {
         const response2 = await request(app)
             .delete(`${PATHS.posts}/112ee`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
-        expect(response2.status).toBe(HttpStatus.NotFound);
+        expect(response2.status).toBe(HttpStatus.BadRequest);
+        expect(response2.body).toEqual({
+            errorsMessages: [
+                {
+                    field: 'id',
+                    message: 'id is incorrect'
+                }
+            ]
+        });
 
+        const testId = `1${postId.slice(1)}`;
         const response3 = await request(app)
+            .delete(`${PATHS.posts}/${testId}`)
+            .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
+        expect(response3.status).toBe(HttpStatus.NotFound);
+
+        const response4 = await request(app)
             .delete(`${PATHS.posts}/${postId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
-        expect(response3.status).toBe(HttpStatus.NoContent);
+        expect(response4.status).toBe(HttpStatus.NoContent);
 
         const responseGet = await request(app).get(`${PATHS.posts}/${postId}`);
         expect(responseGet.status).toBe(HttpStatus.NotFound);

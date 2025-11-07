@@ -2,16 +2,20 @@ import { Collection, MongoClient } from 'mongodb';
 import { Blog } from '../blogs/types/blog.types';
 import { Post } from '../posts/types/posts.types';
 import dotenv from 'dotenv';
-import { mongoDB } from '../core/constants/settings';
 
 dotenv.config();
 
-const mongoURL = process.env.MONGO_URL || mongoDB.atlas || mongoDB.local;
+const mongoURL = process.env.MONGO_URL;
+
 let client: MongoClient;
 export let blogCollection: Collection<Blog>;
 export let postCollection: Collection<Post>;
 
 export async function runDB() {
+    if (!mongoURL) {
+        throw new Error('MongoDB URL is missing');
+    }
+
     try {
         client = new MongoClient(mongoURL);
         const db = client.db('blog');

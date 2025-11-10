@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { blogsRepository } from '../../repositories/blogs.repository';
+import { blogsService } from '../../application/blogs.service';
 import { HttpStatus } from '../../../core/constants/http-statuses';
 
 export async function deleteBlogHandler(req: Request<{ id: string }>, res: Response) {
-    const result = await blogsRepository.deleteBlog(req.params.id);
+    const result = await blogsService.deleteBlog(req.params.id);
 
     if (!result) {
         res.sendStatus(HttpStatus.NotFound);

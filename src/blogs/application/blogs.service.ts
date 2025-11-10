@@ -22,5 +22,13 @@ export const blogsService = {
         const blogId = await blogsRepository.createNewBlog(newBlog);
 
         return this.getBlogById(blogId); // TODO: 50/50
+    },
+
+    async updateBlog(id: string, data: BlogInputDto): Promise<boolean> {
+        return blogsRepository.updateBlog(id, data);
+    },
+
+    async deleteBlog(id: string): Promise<boolean> {
+        return blogsRepository.deleteBlog(id);
     }
 };

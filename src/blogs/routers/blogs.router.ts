@@ -12,6 +12,9 @@ import { inputValidationResultMiddleware } from '../../core/middlewares/validati
 import { idValidation } from '../../core/validation/id-validation';
 import { queryValidationMiddlewares } from '../middlewares/validation/blog.query.validation-middlewares';
 import { BlogSortFields } from '../types/sorting.types';
+import { createPostForSpecificBlogHandler } from './handlers/create-post-for-specific-blog.handler';
+import { blogIdValidation } from '../middlewares/validation/blog.params.validation-middlewares';
+import { postInputWithoutBlogIdDtoValidation } from '../../posts/middlewares/validation/post.input-dto.validation-middlewares';
 
 export const blogsRouter = Router();
 
@@ -29,6 +32,14 @@ blogsRouter
         blogInputDtoValidation,
         inputValidationResultMiddleware,
         createBlogHandler
+    )
+    .post(
+        '/:blogId/posts',
+        authMiddleware,
+        blogIdValidation,
+        postInputWithoutBlogIdDtoValidation,
+        inputValidationResultMiddleware,
+        createPostForSpecificBlogHandler
     )
     .put(
         '/:id',

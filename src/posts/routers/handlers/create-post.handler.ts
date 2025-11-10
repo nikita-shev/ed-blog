@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PostInputDto, PostOutputDto } from '../../dto';
-import { postsRepository } from '../../repositories/posts.repository';
+import { postsService } from '../../application/posts.service';
 import { HttpStatus } from '../../../core/constants/http-statuses';
 import { mapToPostOutput } from '../mappers/mapToPostOutput';
 
@@ -8,7 +8,11 @@ export async function createPostHandler(
     req: Request<{}, {}, PostInputDto>,
     res: Response<PostOutputDto>
 ) {
-    const post = await postsRepository.createPost(req.body);
+    const post = await postsService.createPost(req.body);
+
+    if (!post) {
+        return res.sendStatus(HttpStatus.NotFound);
+    }
 
     res.status(HttpStatus.Created).send(mapToPostOutput(post));
 }

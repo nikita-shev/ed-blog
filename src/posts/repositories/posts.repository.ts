@@ -12,11 +12,10 @@ export const postsRepository = {
         return postCollection.findOne({ _id: new ObjectId(id) });
     },
 
-    async createPost(data: PostInputDto): Promise<PostWithId> {
-        const newPost: Post = { blogName: 'Test', createdAt: new Date().toISOString(), ...data };
-        const insertResult = await postCollection.insertOne(newPost);
+    async createPost(data: Post): Promise<string> {
+        const insertResult = await postCollection.insertOne(data);
 
-        return { ...newPost, _id: insertResult.insertedId };
+        return insertResult.insertedId.toString();
     },
 
     async updatePost(id: string, data: PostInputDto): Promise<boolean> {

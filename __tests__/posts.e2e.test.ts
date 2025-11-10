@@ -7,7 +7,7 @@ import { BlogInputDto } from '../src/blogs/dto';
 import { PostInputDto } from '../src/posts/dto';
 import { runDB } from '../src/db/db.config';
 
-describe('Tests path "/blogs"', () => {
+describe('Tests path "/posts"', () => {
     const app = express();
     setupApp(app);
 

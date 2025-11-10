@@ -4,3 +4,5 @@ export interface PostInputDto {
     content: string;
     blogId: string;
 }
+
+export type PostInputWithoutBlogIdDto = Omit<PostInputDto, 'blogId'>;

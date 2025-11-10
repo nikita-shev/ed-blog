@@ -1,8 +1,11 @@
 import { blogsRepository } from '../repositories/blogs.repository';
+import { postsService } from '../../posts/application/posts.service';
 import { Blog, BlogWithId } from '../types/blog.types';
 import { SearchResult } from '../../core/types/dto.types';
 import { BlogsSearchParams } from '../types/transaction.types';
 import { BlogInputDto } from '../dto';
+import { PostInputWithoutBlogIdDto } from '../../posts/dto/post.input-dto';
+import { PostWithId } from '../../posts/types/posts.types';
 
 export const blogsService = {
     async getBlogs(params: BlogsSearchParams): Promise<SearchResult<BlogWithId>> {
@@ -14,10 +17,13 @@ export const blogsService = {
     },
 
     async createBlog(data: BlogInputDto): Promise<BlogWithId | null> {
+        const { name, description, websiteUrl } = data;
         const newBlog: Blog = {
             createdAt: new Date().toISOString(),
             isMembership: false,
-            ...data
+            name,
+            description,
+            websiteUrl
         };
         const blogId = await blogsRepository.createNewBlog(newBlog);
 
@@ -30,5 +36,14 @@ export const blogsService = {
 
     async deleteBlog(id: string): Promise<boolean> {
         return blogsRepository.deleteBlog(id);
+    },
+
+    async createPostForBlog(
+        blogId: string,
+        data: PostInputWithoutBlogIdDto
+    ): Promise<PostWithId | null> {
+        const { title, shortDescription, content } = data;
+
+        return postsService.createPost({ blogId, title, shortDescription, content });
     }
 };

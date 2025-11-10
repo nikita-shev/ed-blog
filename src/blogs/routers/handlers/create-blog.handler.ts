@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { BlogInputDto, BlogOutputDto } from '../../dto';
-import { blogsRepository } from '../../repositories/blogs.repository';
+import { blogsService } from '../../application/blogs.service';
 import { HttpStatus } from '../../../core/constants/http-statuses';
 import { convertBlogData } from '../mappers/mapToBlogOutput';
 
@@ -9,7 +9,11 @@ export async function createBlogHandler(
     req: Request<{}, {}, BlogInputDto>,
     res: Response<BlogOutputDto>
 ) {
-    const newBlog = await blogsRepository.createNewBlog(req.body);
+    const newBlog = await blogsService.createBlog(req.body);
 
-    res.status(HttpStatus.Created).send(convertBlogData(newBlog));
+    if (!newBlog) {
+        return res.sendStatus(HttpStatus.NotFound);
+    }
+
+    res.status(HttpStatus.Created).send(convertBlogData(newBlog)); // TODO: convertBlogData
 }

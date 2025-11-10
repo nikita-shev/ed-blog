@@ -29,16 +29,10 @@ export const blogsRepository = {
         return blogCollection.findOne({ _id: new ObjectId(id) });
     },
 
-    async createNewBlog(data: BlogInputDto): Promise<BlogWithId> {
-        const newBlog: Blog = {
-            createdAt: new Date().toISOString(),
-            isMembership: false,
-            ...data
-        };
+    async createNewBlog(data: Blog): Promise<string> {
+        const insertResult = await blogCollection.insertOne(data);
 
-        const insertResult = await blogCollection.insertOne(newBlog);
-
-        return { ...newBlog, _id: insertResult.insertedId };
+        return insertResult.insertedId.toString();
     },
 
     async updateBlog(id: string, data: BlogInputDto): Promise<boolean> {

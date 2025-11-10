@@ -1,11 +1,20 @@
-import { Request, Response } from 'express';
-import { blogsRepository } from '../../repositories/blogs.repository';
+import { blogsService } from '../../application/blogs.service';
 import { mapToBlogOutput } from '../mappers/mapToBlogOutput';
-import { BlogOutputDto } from '../../dto';
 import { HttpStatus } from '../../../core/constants/http-statuses';
+import { BlogsSearchParams, RequestQuery, ResponseBody } from '../../types/transaction.types';
+import { matchedData } from 'express-validator';
 
-export async function getBlogsHandler(req: Request, res: Response<BlogOutputDto[]>) {
-    const blogs = await blogsRepository.findBlogs();
+export async function getBlogsHandler(req: RequestQuery, res: ResponseBody) {
+    const sanitizedQuery = matchedData<BlogsSearchParams>(req, {
+        locations: ['query'],
+        includeOptionals: true
+    });
 
-    res.status(HttpStatus.Ok).send(blogs.map(mapToBlogOutput));
+    const data = await blogsService.getBlogs(sanitizedQuery);
+    const result = mapToBlogOutput(data, {
+        pageSize: sanitizedQuery.pageSize,
+        pageNumber: sanitizedQuery.pageNumber
+    });
+
+    res.status(HttpStatus.Ok).send(result);
 }

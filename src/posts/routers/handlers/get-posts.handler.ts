@@ -11,12 +11,13 @@ export async function getPostsHandler(req: RequestQuery, res: ResponseBody) {
     });
 
     // TODO: fix
+    console.log(req.query);
     const t =
         Object.keys(sanitizedQuery).length > 0
             ? sanitizedQuery
             : {
-                  pageNumber: Number(req.query.pageNumber) ?? 1,
-                  pageSize: Number(req.query.pageSize) ?? 10,
+                  pageNumber: Number(req.query.pageNumber) || 1,
+                  pageSize: Number(req.query.pageSize) || 10,
                   // searchNameTerm: req.query.searchNameTerm ?? '',
                   sortBy: req.query.sortBy ?? 'createdAt',
                   sortDirection: req.query.sortDirection ??'desc'

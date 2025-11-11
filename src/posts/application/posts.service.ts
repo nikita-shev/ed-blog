@@ -30,5 +30,13 @@ export const postsService = {
         const postId = await postsRepository.createPost(newPost);
 
         return this.findPostById(postId); // TODO: 50/50
+    },
+
+    async updatePost(id: string, data: PostInputDto): Promise<boolean> {
+        return postsRepository.updatePost(id, data);
+    },
+
+    async deletePost(id: string): Promise<boolean> {
+        return postsRepository.deletePost(id);
     }
 };

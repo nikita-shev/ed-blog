@@ -1,20 +1,27 @@
 import { Router } from 'express';
 import {
+    createPostHandler,
+    deletePostHandler,
     getPostHandler,
     getPostsHandler,
-    createPostHandler,
-    updatePostHandler,
-    deletePostHandler
+    updatePostHandler
 } from './handlers';
 import { authMiddleware } from '../../auth/middlewares/auth.middleware';
 import { postInputDtoValidation } from '../middlewares/validation/post.input-dto.validation-middlewares';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
 import { idValidation } from '../../core/validation/id-validation';
+import { queryValidationMiddlewares2 } from '../../blogs/middlewares/validation/blog.query.validation-middlewares';
+import { BlogSortFields } from '../../blogs/types/sorting.types';
 
 export const postsRouter = Router();
 
 postsRouter
-    .get('/', getPostsHandler)
+    .get(
+        '/',
+        queryValidationMiddlewares2(BlogSortFields),
+        inputValidationResultMiddleware,
+        getPostsHandler
+    )
     .get('/:id', idValidation, inputValidationResultMiddleware, getPostHandler)
     .post(
         '/',

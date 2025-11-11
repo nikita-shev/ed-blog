@@ -1,8 +1,18 @@
+import { postsRepository } from '../repositories/posts.repository';
 import { Post, PostWithId } from '../types/posts.types';
 import { PostInputDto } from '../dto';
-import { postsRepository } from '../repositories/posts.repository';
+import { PostsSearchParams } from '../types/transaction.types';
+import { SearchResult } from '../../core/types/dto.types';
+import { PostFilters } from '../types/filter.types';
 
 export const postsService = {
+    async findPosts(
+        params: PostsSearchParams,
+        filteringParams?: PostFilters
+    ): Promise<SearchResult<PostWithId>> {
+        return postsRepository.findPosts(params, filteringParams);
+    },
+
     async findPostById(id: string): Promise<PostWithId | null> {
         return postsRepository.findPostById(id);
     },

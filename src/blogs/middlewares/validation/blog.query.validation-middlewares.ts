@@ -19,3 +19,15 @@ export function queryValidationMiddlewares<T extends string>(sortFieldsEnum: Rec
         sortDirectionValidation()
     ];
 }
+
+// TODO: rename "queryValidationMiddlewares2"
+export function queryValidationMiddlewares2<T extends string>(sortFieldsEnum: Record<string, T>) {
+    const allowedSortFields = Object.values(sortFieldsEnum);
+
+    return [
+        pageNumberValidation,
+        pageSizeValidation,
+        sortByValidation(allowedSortFields),
+        sortDirectionValidation()
+    ];
+}

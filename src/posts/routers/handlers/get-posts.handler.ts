@@ -1,11 +1,12 @@
-import { Request, Response } from 'express';
-import { PostOutputDto } from '../../dto';
-import { HttpStatus } from '../../../core/constants/http-statuses';
-import { postsRepository } from '../../repositories/posts.repository';
+import { postsService } from '../../application/posts.service';
 import { mapToPostOutput } from '../mappers/mapToPostOutput';
+import { HttpStatus } from '../../../core/constants/http-statuses';
+import { RequestQuery, ResponseBody } from '../../types/transaction.types';
 
-export async function getPostsHandler(req: Request, res: Response<PostOutputDto[]>) {
-    const posts = await postsRepository.findPosts();
+export async function getPostsHandler(req: RequestQuery, res: ResponseBody) {
+    const posts = await postsService.findPosts(req.query);
 
-    res.status(HttpStatus.Ok).send(posts.map(mapToPostOutput));
+    res.status(HttpStatus.Ok).send(
+        mapToPostOutput(posts, { pageNumber: req.query.pageNumber, pageSize: req.query.pageSize })
+    );
 }

@@ -1,18 +1,22 @@
 import { Router } from 'express';
 import {
     createBlogHandler,
+    createPostForSpecificBlogHandler,
     deleteBlogHandler,
     getBlogHandler,
     getBlogsHandler,
+    getPostsForSpecificBlogHandler,
     updateBlogHandler
 } from './handlers';
 import { authMiddleware } from '../../auth/middlewares/auth.middleware';
 import { blogInputDtoValidation } from '../middlewares/validation/blog.input-dto.validation-middlewares';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
 import { idValidation } from '../../core/validation/id-validation';
-import { queryValidationMiddlewares } from '../middlewares/validation/blog.query.validation-middlewares';
+import {
+    queryValidationMiddlewares,
+    queryValidationMiddlewares2
+} from '../middlewares/validation/blog.query.validation-middlewares';
 import { BlogSortFields } from '../types/sorting.types';
-import { createPostForSpecificBlogHandler } from './handlers/create-post-for-specific-blog.handler';
 import { blogIdValidation } from '../middlewares/validation/blog.params.validation-middlewares';
 import { postInputWithoutBlogIdDtoValidation } from '../../posts/middlewares/validation/post.input-dto.validation-middlewares';
 
@@ -24,6 +28,13 @@ blogsRouter
         queryValidationMiddlewares(BlogSortFields),
         inputValidationResultMiddleware,
         getBlogsHandler
+    )
+    .get(
+        '/:blogId/posts',
+        blogIdValidation,
+        queryValidationMiddlewares2(BlogSortFields),
+        inputValidationResultMiddleware,
+        getPostsForSpecificBlogHandler
     )
     .get('/:id', idValidation, inputValidationResultMiddleware, getBlogHandler)
     .post(

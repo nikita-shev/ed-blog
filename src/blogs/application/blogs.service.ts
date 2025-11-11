@@ -6,6 +6,7 @@ import { BlogsSearchParams } from '../types/transaction.types';
 import { BlogInputDto } from '../dto';
 import { PostInputWithoutBlogIdDto } from '../../posts/dto/post.input-dto';
 import { PostWithId } from '../../posts/types/posts.types';
+import { PostsSearchParams } from '../../posts/types/transaction.types';
 
 export const blogsService = {
     async getBlogs(params: BlogsSearchParams): Promise<SearchResult<BlogWithId>> {
@@ -36,6 +37,13 @@ export const blogsService = {
 
     async deleteBlog(id: string): Promise<boolean> {
         return blogsRepository.deleteBlog(id);
+    },
+
+    async getPostsForBlog(
+        blogId: string,
+        params: PostsSearchParams
+    ): Promise<SearchResult<PostWithId>> {
+        return postsService.findPosts(params, { blogId });
     },
 
     async createPostForBlog(

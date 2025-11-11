@@ -18,8 +18,8 @@ export const postsRouter = Router();
 postsRouter
     .get(
         '/',
-        queryValidationMiddlewares2(BlogSortFields),
-        inputValidationResultMiddleware,
+        // queryValidationMiddlewares2(BlogSortFields),
+        // inputValidationResultMiddleware,
         getPostsHandler
     )
     .get('/:id', idValidation, inputValidationResultMiddleware, getPostHandler)

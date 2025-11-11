@@ -15,6 +15,7 @@ import { BlogSortFields } from '../../blogs/types/sorting.types';
 
 export const postsRouter = Router();
 
+// TODO: fix validation
 postsRouter
     .get(
         '/',

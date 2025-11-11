@@ -10,10 +10,22 @@ export async function getPostsHandler(req: RequestQuery, res: ResponseBody) {
         includeOptionals: true
     });
 
-    const posts = await postsService.findPosts(sanitizedQuery);
+    // TODO: fix
+    const t =
+        Object.keys(sanitizedQuery).length > 0
+            ? sanitizedQuery
+            : {
+                  pageNumber: 1,
+                  pageSize: 10,
+                  searchNameTerm: '',
+                  sortBy: 'createdAt',
+                  sortDirection: 'desc'
+              };
+
+    const posts = await postsService.findPosts(t);
     const result = mapToPostOutput(posts, {
-        pageNumber: sanitizedQuery.pageNumber,
-        pageSize: sanitizedQuery.pageSize
+        pageNumber: t.pageNumber,
+        pageSize: t.pageSize
     });
 
     res.status(HttpStatus.Ok).send(result);

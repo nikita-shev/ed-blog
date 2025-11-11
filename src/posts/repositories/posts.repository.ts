@@ -13,7 +13,7 @@ export const postsRepository = {
         params: PostsSearchParams,
         filteringParams?: PostFilters
     ): Promise<SearchResult<PostWithId>> {
-        const { pageSize, pageNumber, sortBy, sortDirection } = params;
+        const { pageSize = 10, pageNumber = 1, sortBy, sortDirection } = params; //TODO off validation
 
         const filter = createFilter(filteringParams);
         const sorting: Sort = { [sortBy]: sortDirection === SortDirection.Asc ? 1 : -1 };

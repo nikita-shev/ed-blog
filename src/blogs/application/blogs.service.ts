@@ -51,6 +51,11 @@ export const blogsService = {
         data: PostInputWithoutBlogIdDto
     ): Promise<PostWithId | null> {
         const { title, shortDescription, content } = data;
+        const blog = await this.getBlogById(blogId);
+
+        if (!blog) {
+            return null;
+        }
 
         return postsService.createPost({ blogId, title, shortDescription, content });
     }

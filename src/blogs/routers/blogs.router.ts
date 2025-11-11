@@ -22,6 +22,7 @@ import { postInputWithoutBlogIdDtoValidation } from '../../posts/middlewares/val
 
 export const blogsRouter = Router();
 
+// TODO: fix
 blogsRouter
     .get(
         '/',

@@ -16,7 +16,7 @@ export const postsRepository = {
         const { pageSize, pageNumber, sortBy, sortDirection } = params;
 
         const filter = createFilter(filteringParams);
-        const sorting: Sort = { [sortBy]: sortDirection === SortDirection.Asc ? 1 : -1 };
+        const sorting: Sort = { [sortBy]: sortDirection === SortDirection.Asc ? 1 : -1, _id: -1 };
         const skip = (pageNumber - 1) * pageSize;
 
         const posts = await postCollection

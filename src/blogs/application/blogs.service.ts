@@ -41,7 +41,7 @@ export const blogsService = {
 
     async getPostsForBlog(
         blogId: string,
-        params: PostsSearchParams
+        params: PostsSearchParams // TODO: rename
     ): Promise<SearchResult<PostWithId>> {
         return postsService.findPosts(params, { blogId });
     },

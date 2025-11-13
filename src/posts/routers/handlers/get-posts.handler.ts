@@ -10,24 +10,10 @@ export async function getPostsHandler(req: RequestQuery, res: ResponseBody) {
         includeOptionals: true
     });
 
-    // TODO: fix
-    console.log(req.query);
-    const t =
-        Object.keys(sanitizedQuery).length > 0
-            ? sanitizedQuery
-            : {
-                  pageNumber: Number(req.query.pageNumber) || 1,
-                  pageSize: Number(req.query.pageSize) || 10,
-                  // searchNameTerm: req.query.searchNameTerm ?? '',
-                  sortBy: req.query.sortBy ?? 'createdAt',
-                  sortDirection: req.query.sortDirection ??'desc'
-              };
-    console.log(t);
-
-    const posts = await postsService.findPosts(t);
+    const posts = await postsService.findPosts(sanitizedQuery);
     const result = mapToPostOutput(posts, {
-        pageNumber: t.pageNumber,
-        pageSize: t.pageSize
+        pageNumber: sanitizedQuery.pageNumber,
+        pageSize: sanitizedQuery.pageSize
     });
 
     res.status(HttpStatus.Ok).send(result);

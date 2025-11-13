@@ -22,7 +22,6 @@ import { postInputWithoutBlogIdDtoValidation } from '../../posts/middlewares/val
 
 export const blogsRouter = Router();
 
-// TODO: fix
 blogsRouter
     .get(
         '/',
@@ -32,8 +31,8 @@ blogsRouter
     )
     .get(
         '/:blogId/posts',
-        blogIdValidation,
-        // queryValidationMiddlewares2(BlogSortFields),
+        // blogIdValidation, // TODO
+        queryValidationMiddlewares2(BlogSortFields),
         inputValidationResultMiddleware,
         getPostsForSpecificBlogHandler
     )

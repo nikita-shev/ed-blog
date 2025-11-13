@@ -7,8 +7,8 @@ import { PostFilters } from '../types/filter.types';
 
 export const postsService = {
     async findPosts(
-        params: PostsSearchParams,
-        filteringParams?: PostFilters
+        params: PostsSearchParams, // TODO: rename
+        filteringParams?: PostFilters // TODO: rename
     ): Promise<SearchResult<PostWithId>> {
         return postsRepository.findPosts(params, filteringParams);
     },

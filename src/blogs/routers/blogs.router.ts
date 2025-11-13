@@ -31,9 +31,9 @@ blogsRouter
     )
     .get(
         '/:blogId/posts',
-        // blogIdValidation, // TODO
-        queryValidationMiddlewares2(BlogSortFields),
-        inputValidationResultMiddleware,
+        // blogIdValidation,
+        // queryValidationMiddlewares2(BlogSortFields),
+        // inputValidationResultMiddleware,
         getPostsForSpecificBlogHandler
     )
     .get('/:id', idValidation, inputValidationResultMiddleware, getBlogHandler)

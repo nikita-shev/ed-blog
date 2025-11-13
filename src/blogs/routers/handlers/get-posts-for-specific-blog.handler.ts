@@ -22,10 +22,17 @@ export async function getPostsForSpecificBlogHandler(
         includeOptionals: true
     });
 
-    const data = await blogsService.getPostsForBlog(req.params.blogId, sanitizedQuery);
+    const t: PostsSearchParams = {
+        pageNumber: Number(req.query.pageNumber) || 1,
+        pageSize: Number(req.query.pageSize) || 10,
+        sortBy: req.query.sortBy || 'createdAt',
+        sortDirection: req.query.sortDirection || 'desc'
+    };
+
+    const data = await blogsService.getPostsForBlog(req.params.blogId, t);
     const result = mapToPostOutput(data, {
-        pageNumber: sanitizedQuery.pageNumber,
-        pageSize: sanitizedQuery.pageSize
+        pageNumber: t.pageNumber,
+        pageSize: t.pageSize
     });
 
     res.status(HttpStatus.Ok).send(result);

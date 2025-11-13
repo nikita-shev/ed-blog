@@ -11,14 +11,14 @@ import { postInputDtoValidation } from '../middlewares/validation/post.input-dto
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
 import { idValidation } from '../../core/validation/id-validation';
 import { queryValidationMiddlewares2 } from '../../blogs/middlewares/validation/blog.query.validation-middlewares';
-import { BlogSortFields } from '../../blogs/types/sorting.types';
+import { PostSortFields } from '../types/sorting.types';
 
 export const postsRouter = Router();
 
 postsRouter
     .get(
         '/',
-        queryValidationMiddlewares2(BlogSortFields),
+        queryValidationMiddlewares2(PostSortFields),
         inputValidationResultMiddleware,
         getPostsHandler
     )

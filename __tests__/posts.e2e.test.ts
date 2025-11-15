@@ -20,7 +20,13 @@ describe('Tests path "/posts"', () => {
         const response = await request(app).get(`${PATHS.posts}`);
 
         expect(response.status).toBe(HttpStatus.Ok);
-        expect(response.body).toEqual([]);
+        expect(response.body).toEqual({
+            items: [],
+            page: 1,
+            pageSize: 10,
+            pagesCount: 0,
+            totalCount: 0
+        });
     });
 
     let postId: string;

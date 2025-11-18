@@ -14,6 +14,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "bcrypt": "^6.0.0",
         "dotenv": "^17.2.3",
         "express": "^5.1.0",
         "express-validator": "^7.3.0",
@@ -21,6 +22,7 @@
     },
     "devDependencies": {
         "@darbitdev/prettier-config": "^0.0.1",
+        "@types/bcrypt": "^6.0.0",
         "@types/express": "^5.0.3",
         "@types/jest": "^30.0.0",
         "@types/node": "^24.9.1",

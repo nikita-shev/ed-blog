@@ -21,12 +21,15 @@ export const usersQueryRepository = {
         const { pageNumber, pageSize, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } =
             queryParams;
 
-        const filter = {
-            $or: [
-                { login: { $regex: searchLoginTerm, $options: 'i' } },
-                { email: { $regex: searchEmailTerm, $options: 'i' } }
-            ]
-        };
+        // TODO: move
+        const mapSearchParams = [
+            { field: 'login', search: searchLoginTerm },
+            { field: 'email', search: searchEmailTerm }
+        ]
+            .filter((el) => el.search)
+            .map((el) => (el.search ? { [el.field]: { $regex: el.search, $options: 'i' } } : {}));
+        const filter = mapSearchParams.length ? { $or: mapSearchParams } : {};
+
         const sorting: Sort = {
             [sortBy]: sortDirection === SortDirection.Asc ? 1 : -1,
             createdAt: sortDirection === SortDirection.Asc ? 1 : -1

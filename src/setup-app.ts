@@ -4,6 +4,7 @@ import { blogsRouter } from './blogs/routers/blogs.router';
 import { postsRouter } from './posts/routers/posts.router';
 import { testingRouter } from './testing/testing.router';
 import { usersRouter } from './users/routers/users.router';
+import { authRouter } from './auth/routers/auth.router';
 
 export function setupApp(app: Express) {
     app.use(express.json());
@@ -11,6 +12,7 @@ export function setupApp(app: Express) {
     app.use(PATHS.blogs, blogsRouter);
     app.use(PATHS.posts, postsRouter);
     app.use(PATHS.users, usersRouter);
+    app.use(PATHS.auth, authRouter);
     app.use(PATHS.testing, testingRouter);
 
     app.use(errorHandler); // TODO: fix

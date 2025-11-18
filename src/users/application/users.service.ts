@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { UserInputDto } from '../dto/users.dto';
 import { usersRepository } from '../repositories/users.repository';
 import { Error } from '../../core/types/error.types';
-import { UserWithPassword } from '../types/users.types';
+import { User } from '../types/users.types';
 
 export const usersService = {
     async createUser(credentials: UserInputDto): Promise<Error | string> {
@@ -15,8 +15,8 @@ export const usersService = {
             return { field, message: `${field} should be unique` } as Error;
         }
 
-        const hashPassword = await bcrypt.hash(credentials.password, 12);
-        const newUser: UserWithPassword = {
+        const hashPassword = await bcrypt.hash(credentials.password, 12); // TODO: fix "12"
+        const newUser: User = {
             login: credentials.login,
             email: credentials.email,
             password: hashPassword,

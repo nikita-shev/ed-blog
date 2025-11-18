@@ -1,5 +1,5 @@
 import { query } from 'express-validator';
-import { SortDirection } from '../../../types/sorting.types';
+import { SortDirection } from '../../../../types/sorting.types';
 
 export function sortDirectionValidation() {
     const sortDirection = Object.values(SortDirection);

@@ -22,6 +22,7 @@ export async function getPostsForSpecificBlogHandler(
         includeOptionals: true
     });
 
+    // TODO tests
     const t: PostsSearchParams = {
         pageNumber: Number(req.query.pageNumber) || 1,
         pageSize: Number(req.query.pageSize) || 10,

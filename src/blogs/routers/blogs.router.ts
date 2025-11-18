@@ -32,7 +32,7 @@ blogsRouter
     .get(
         '/:blogId/posts',
         // blogIdValidation,
-        // queryValidationMiddlewares2(BlogSortFields),
+        // queryValidationMiddlewares2(BlogSortFields), // TODO: tests
         // inputValidationResultMiddleware,
         getPostsForSpecificBlogHandler
     )

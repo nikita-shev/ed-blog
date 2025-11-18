@@ -27,7 +27,7 @@ export const usersQueryRepository = {
             { field: 'email', search: searchEmailTerm }
         ]
             .filter((el) => el.search)
-            .map((el) => (el.search ? { [el.field]: { $regex: el.search, $options: 'i' } } : {}));
+            .map((el) => ({ [el.field]: { $regex: el.search, $options: 'i' } }));
         const filter = mapSearchParams.length ? { $or: mapSearchParams } : {};
 
         const sorting: Sort = {

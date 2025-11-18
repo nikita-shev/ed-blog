@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { HttpStatus } from '../../core/constants/http-statuses';
+import { HttpStatus } from '../constants/http-statuses';
 
 const USERNAME = 'admin';
 const PASSWORD = 'qwerty';

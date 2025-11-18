@@ -6,7 +6,7 @@ import {
     getPostsHandler,
     updatePostHandler
 } from './handlers';
-import { authMiddleware } from '../../auth/middlewares/auth.middleware';
+import { authMiddleware } from '../../core/middlewares/auth.middleware';
 import { postInputDtoValidation } from '../middlewares/validation/post.input-dto.validation-middlewares';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
 import { idValidation } from '../../core/validation/id-validation';

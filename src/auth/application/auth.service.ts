@@ -7,6 +7,7 @@ import { NullableResultObject, ResultStatus } from '../../core/result-object/res
 import { CurrentUser } from '../types/auth.types';
 
 export const authService = {
+    // TODO: rename "checkUser"
     async checkUser(credentials: AuthInputDto): NullableResultObject<AccessToken> {
         const result = await usersRepository.findUser(credentials.loginOrEmail);
 

@@ -24,9 +24,10 @@ export const jwtService = {
 
             return createResultObject(payload);
         } catch (e) {
-            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
-                { field: 'loginOrEmail', message: 'Wrong credentials' }
-            ]);
+            return createResultObject(null, ResultStatus.Unauthorized);
+            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            //     { field: 'loginOrEmail', message: 'Wrong credentials' }
+            // ]);
         }
     }
 };

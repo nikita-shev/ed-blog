@@ -41,10 +41,13 @@ export function authBearerMiddleware(req: Request, res: Response, next: NextFunc
 
     const result = jwtService.checkToken(token);
 
+    console.log(result);
+
     if (!result.data) {
-        return res.status(resultCodeToHttpException(result.status)).send({
-            errorsMessages: result.extensions
-        });
+        return res.sendStatus(resultCodeToHttpException(result.status));
+        // return res.status(resultCodeToHttpException(result.status)).send({
+        //     errorsMessages: result.extensions
+        // });
     } else {
         req.appContext = { userId: result.data.userId };
         next();

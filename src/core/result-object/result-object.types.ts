@@ -3,6 +3,7 @@ import { Error } from '../types/error.types';
 export enum ResultStatus {
     Success = 'Success',
     NotFound = 'NotFound',
+    NoContent = 'NoContent',
     Forbidden = 'Forbidden',
     Unauthorized = 'Unauthorized',
     BadRequest = 'BadRequest'

@@ -2,6 +2,7 @@ import { Error } from '../types/error.types';
 
 export enum ResultStatus {
     Success = 'Success',
+    Created = 'Created',
     NotFound = 'NotFound',
     NoContent = 'NoContent',
     Forbidden = 'Forbidden',

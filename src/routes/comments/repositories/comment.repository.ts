@@ -42,11 +42,7 @@ export const commentRepository = {
 
     async deleteComment(id: string): Promise<ResultObject<boolean>> {
         const result = await commentCollection.deleteOne({ _id: new ObjectId(id) });
-        const deletedComment = result.deletedCount === 1;
 
-        return createResultObject(
-            deletedComment,
-            deletedComment ? ResultStatus.NoContent : ResultStatus.NotFound
-        );
+        return createResultObject(result.deletedCount === 1, ResultStatus.NoContent);
     }
 };

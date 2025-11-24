@@ -35,7 +35,11 @@ export const commentsService = {
     async deleteComment(userID: string, commentId: string): NullableResultObject<boolean> {
         const result = await this.getCommentById(commentId);
 
-        if (result.data?.commentatorInfo.userId !== userID) {
+        if (!result.data) {
+            return result;
+        }
+
+        if (result.data && result.data?.commentatorInfo.userId !== userID) {
             return createResultObject(null, ResultStatus.Forbidden);
         }
 

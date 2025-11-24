@@ -1,5 +1,5 @@
 import { Sort } from 'mongodb';
-import { commentCollection, userCollection } from '../../../db/db.config';
+import { commentCollection } from '../../../db/db.config';
 import { convertCommentData, mapToCommentOutput } from '../routers/mappers/mapToCommentOutput';
 import { SortDirection } from '../../../core/types/sorting.types';
 import { CommentsSearchParams } from '../types/transaction.types';
@@ -27,7 +27,7 @@ export const commentQueryRepository = {
             .skip(skip)
             .limit(pageSize)
             .toArray();
-        const totalCount = await userCollection.countDocuments(filter);
+        const totalCount = await commentCollection.countDocuments(filter);
 
         return this._mapToCommentOutput({ items: comments, totalCount }, { pageNumber, pageSize }); // TODO: ResultObj ???
     },

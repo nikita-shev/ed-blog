@@ -41,8 +41,6 @@ export function authBearerMiddleware(req: Request, res: Response, next: NextFunc
 
     const result = jwtService.checkToken(token);
 
-    console.log(result);
-
     if (!result.data) {
         return res.sendStatus(resultCodeToHttpException(result.status));
         // return res.status(resultCodeToHttpException(result.status)).send({

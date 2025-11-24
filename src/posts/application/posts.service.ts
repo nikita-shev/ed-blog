@@ -73,7 +73,7 @@ export const postsService = {
             return result;
         }
 
-        return createResultObject(convertCommentData(result.data));
+        return createResultObject(convertCommentData(result.data), ResultStatus.Created);
     }
 };
 

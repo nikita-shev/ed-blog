@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { Blog } from '../blogs/types/blog.types';
 import { Post } from '../posts/types/posts.types';
 import { User } from '../users/types/users.types';
+import { Comment } from '../routes/comments/types/comments.types';
 
 dotenv.config();
 
@@ -12,19 +13,21 @@ let client: MongoClient;
 export let blogCollection: Collection<Blog>;
 export let postCollection: Collection<Post>;
 export let userCollection: Collection<User>;
+export let commentCollection: Collection<Comment>;
 
-export async function runDB() {
-    if (!mongoURL) {
+export async function runDB(dbUrl = mongoURL) {
+    if (!dbUrl) {
         throw new Error('MongoDB URL is missing');
     }
 
     try {
-        client = new MongoClient(mongoURL);
+        client = new MongoClient(dbUrl);
         const db = client.db();
 
         blogCollection = db.collection<Blog>('blogs');
         postCollection = db.collection<Post>('posts');
         userCollection = db.collection<User>('users');
+        commentCollection = db.collection<Comment>('comment');
 
         // await client.connect();
         // await db.command({ ping: 1 });

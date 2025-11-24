@@ -16,3 +16,5 @@ export interface ResultObject<T = null> {
     extensions: ExtensionType[];
     data: T;
 }
+
+export type NullableResultObject<T> = Promise<ResultObject<null> | ResultObject<T>>;

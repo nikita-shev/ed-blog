@@ -4,6 +4,15 @@ import { PostInputDto } from '../dto';
 import { PostsSearchParams } from '../types/transaction.types';
 import { SearchResult } from '../../core/types/dto.types';
 import { PostFilters } from '../types/filter.types';
+import { createResultObject } from '../../core/result-object/utils/createResultObject';
+import { NullableResultObject, ResultStatus } from '../../core/result-object/result-object.types';
+import { commentRepository } from '../../routes/comments/repositories/comment.repository';
+import {
+    Comment,
+    CommentatorInfo,
+    CommentWithId
+} from '../../routes/comments/types/comments.types';
+import { CommentOutputDto } from '../../routes/comments/dto/comment.dto';
 
 export const postsService = {
     async findPosts(
@@ -38,5 +47,42 @@ export const postsService = {
 
     async deletePost(id: string): Promise<boolean> {
         return postsRepository.deletePost(id);
+    },
+
+    async createComment(
+        postId: string,
+        content: string,
+        commentatorInfo: CommentatorInfo
+    ): Promise<NullableResultObject<CommentOutputDto>> {
+        const post = await this.findPostById(postId);
+
+        if (!post) {
+            return createResultObject(null, ResultStatus.NotFound);
+        }
+
+        const newComment: Comment = {
+            content,
+            commentatorInfo,
+            postId,
+            createdAt: new Date().toISOString()
+        };
+        const commentId = await commentRepository.createComment(newComment); // TODO: именование. как правильно?
+        const result = await commentRepository.getCommentById(commentId.data); // TODO: избыточно?
+
+        if (!result.data) {
+            return result;
+        }
+
+        return createResultObject(convertCommentData(result.data));
     }
 };
+
+// TODO: move, rename?
+export function convertCommentData(comment: CommentWithId): CommentOutputDto {
+    return {
+        id: String(comment._id),
+        content: comment.content,
+        commentatorInfo: comment.commentatorInfo,
+        createdAt: comment.createdAt
+    };
+}

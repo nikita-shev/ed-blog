@@ -3,8 +3,8 @@ import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';
 import { AccessToken, AuthInputDto } from '../dto/auth.dto';
-import { ResultStatus } from '../../core/result-object/result-object.types';
-import { CurrentUser, NullableResultObject } from '../types/auth.types';
+import { NullableResultObject, ResultStatus } from '../../core/result-object/result-object.types';
+import { CurrentUser } from '../types/auth.types';
 
 export const authService = {
     async checkUser(credentials: AuthInputDto): NullableResultObject<AccessToken> {

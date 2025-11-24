@@ -32,12 +32,8 @@ export const commentRepository = {
             { _id: new ObjectId(id) },
             { $set: content }
         );
-        const updatedComment = result.matchedCount === 1;
 
-        return createResultObject(
-            updatedComment,
-            updatedComment ? ResultStatus.NoContent : ResultStatus.NotFound
-        );
+        return createResultObject(result.matchedCount === 1, ResultStatus.NoContent);
     },
 
     async deleteComment(id: string): Promise<ResultObject<boolean>> {

@@ -9,5 +9,4 @@ export const authRouter = Router();
 
 authRouter
     .get('/me', authBearerMiddleware, getInfoAboutUserHandler)
-    // .post('/login', authInputDtoValidation, inputValidationResultMiddleware, checkUserHandler);
-    .post('/login', checkUserHandler);
+    .post('/login', authInputDtoValidation, inputValidationResultMiddleware, checkUserHandler);

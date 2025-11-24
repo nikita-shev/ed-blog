@@ -16,5 +16,5 @@ export async function getBlogsHandler(req: RequestQuery, res: ResponseBody) {
         pageNumber: sanitizedQuery.pageNumber
     });
 
-    res.status(HttpStatus.Ok).send(result);
+    res.status(HttpStatus.Success).send(result);
 }

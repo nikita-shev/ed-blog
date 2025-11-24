@@ -11,5 +11,5 @@ export async function getBlogHandler(req: Request<{ id: string }>, res: Response
         return res.sendStatus(HttpStatus.NotFound);
     }
 
-    res.status(HttpStatus.Ok).send(convertBlogData(blog)); // TODO: convertBlogData
+    res.status(HttpStatus.Success).send(convertBlogData(blog)); // TODO: convertBlogData
 }

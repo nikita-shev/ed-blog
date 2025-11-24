@@ -9,6 +9,10 @@ export const usersRepository = {
         });
     },
 
+    async findUserById(userId: string): Promise<WithId<User> | null> {
+        return userCollection.findOne({ _id: new ObjectId(userId) });
+    },
+
     // TODO: duplicate findUserByLogin & findUserByEmail
     async findUserByLogin(login: string): Promise<boolean> {
         const user = await userCollection.findOne({ login });

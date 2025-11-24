@@ -1,13 +1,10 @@
 import { Request, Response } from 'express';
+import { AuthOutputDto } from '../../dto/auth.dto';
 import { authService } from '../../application/auth.service';
-import { AccessToken, AuthInputDto } from '../../dto/auth.dto';
 import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
 
-export async function checkUserHandler(
-    req: Request<{}, {}, AuthInputDto>,
-    res: Response<AccessToken>
-) {
-    const result = await authService.checkUser(req.body);
+export async function getInfoAboutUserHandler(req: Request, res: Response<AuthOutputDto>) {
+    const result = await authService.getInfoAboutUser(req.appContext?.userId as string);
     const status = resultCodeToHttpException(result.status);
 
     if (!result.data) {

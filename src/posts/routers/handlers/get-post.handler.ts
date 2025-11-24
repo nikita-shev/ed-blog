@@ -12,5 +12,5 @@ export async function getPostHandler(req: Request<{ id: string }>, res: Response
         return res.sendStatus(HttpStatus.NotFound);
     }
 
-    return res.status(HttpStatus.Ok).send(convertPostData(post)); // TODO: convertPostData
+    return res.status(HttpStatus.Success).send(convertPostData(post)); // TODO: convertPostData
 }

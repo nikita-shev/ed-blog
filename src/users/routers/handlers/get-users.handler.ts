@@ -10,5 +10,5 @@ export async function getUsersHandler(req: RequestQuery, res: ResponseBody) {
     });
     const users = await usersQueryRepository.getUsers(sanitizedQuery);
 
-    res.status(HttpStatus.Ok).send(users);
+    res.status(HttpStatus.Success).send(users);
 }

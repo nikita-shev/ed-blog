@@ -36,5 +36,5 @@ export async function getPostsForSpecificBlogHandler(
         pageSize: t.pageSize
     });
 
-    res.status(HttpStatus.Ok).send(result);
+    res.status(HttpStatus.Success).send(result);
 }

@@ -18,7 +18,7 @@ describe('Tests path "/blogs"', () => {
     it('test GET /blogs', async () => {
         const response = await request(app).get(`${PATHS.blogs}`);
 
-        expect(response.status).toBe(HttpStatus.Ok);
+        expect(response.status).toBe(HttpStatus.Success);
         expect(response.body).toEqual({
             items: [],
             page: 1,
@@ -98,7 +98,7 @@ describe('Tests path "/blogs"', () => {
         expect(response2.status).toBe(HttpStatus.NotFound);
 
         const response3 = await request(app).get(`${PATHS.blogs}/${blogId}`);
-        expect(response3.status).toBe(HttpStatus.Ok);
+        expect(response3.status).toBe(HttpStatus.Success);
         expect(response3.body.name).toBe('Cup');
     });
 

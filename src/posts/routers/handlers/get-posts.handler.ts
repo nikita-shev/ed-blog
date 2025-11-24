@@ -16,5 +16,5 @@ export async function getPostsHandler(req: RequestQuery, res: ResponseBody) {
         pageSize: sanitizedQuery.pageSize
     });
 
-    res.status(HttpStatus.Ok).send(result);
+    res.status(HttpStatus.Success).send(result);
 }

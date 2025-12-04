@@ -12,3 +12,11 @@ export interface AuthOutputDto {
 export interface AccessToken {
     accessToken: string;
 }
+
+// registration ===>
+
+export interface RegistrationInputDto {
+    login: string;
+    password: string;
+    email: string;
+}

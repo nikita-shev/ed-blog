@@ -2,9 +2,15 @@ import bcrypt from 'bcrypt';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';
-import { AccessToken, AuthInputDto } from '../dto/auth.dto';
-import { NullableResultObject, ResultStatus } from '../../core/result-object/result-object.types';
+import { AccessToken, AuthInputDto, RegistrationInputDto } from '../dto/auth.dto';
+import {
+    NullableResultObject,
+    ResultObject,
+    ResultStatus
+} from '../../core/result-object/result-object.types';
 import { CurrentUser } from '../types/auth.types';
+import { usersService } from '../../users/application/users.service';
+import { createMessage, emailAdapter } from '../../adapters/email-adapter';
 
 export const authService = {
     // TODO: rename "checkUser"
@@ -28,7 +34,7 @@ export const authService = {
         }
     },
 
-    // TODO: Q
+    // TODO: Q: authBearerMiddleware проверил токен, но findUserById всегда будет возвращать null. Как быть?
     async getInfoAboutUser(userId: string): NullableResultObject<CurrentUser> {
         const result = await usersRepository.findUserById(userId);
 
@@ -39,7 +45,34 @@ export const authService = {
         const user: CurrentUser = { email: result.email, login: result.login, userId };
 
         return createResultObject(user);
+    },
+
+    async registrationUser(
+        credentials: RegistrationInputDto
+    ): Promise<ResultObject<boolean> | ResultObject<null>> {
+        const result = await usersService.createUser(credentials);
+
+        if (typeof result === 'object') {
+            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [result]);
+        }
+
+        // send email
+        const userInfo = await usersService.getUserInfo(result);
+        if (!userInfo.data) return userInfo;
+
+        const emailSendingStatus = await emailAdapter.sendEmail(
+            userInfo.data.email,
+            'register',
+            createMessage(userInfo.data.emailConfirmation.confirmationCode)
+        );
+
+        if (!emailSendingStatus.data) {
+            await usersService.deleteUser(result);
+            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+                { field: 'registration', message: 'Problems registering. Please try again later.' }
+            ]);
+        }
+
+        return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
     }
 };
-
-// Q: authBearerMiddleware проверил токен, но findUserById всегда будет возвращать null. Как быть?

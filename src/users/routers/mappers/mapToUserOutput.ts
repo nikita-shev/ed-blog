@@ -1,7 +1,8 @@
 import { OutputDto, SearchResult } from '../../../core/types/dto.types';
-import { UserWithId } from '../../types/users.types';
+import { User, UserWithId, UserWithoutPassword } from '../../types/users.types';
 import { UserOutputDto } from '../../dto/users.dto';
 import { UsersSearchParams } from '../../types/transaction.types';
+import { WithId } from 'mongodb';
 
 type ParamsType = Pick<UsersSearchParams, 'pageSize' | 'pageNumber'>;
 
@@ -11,6 +12,16 @@ export function convertUserData(user: UserWithId): UserOutputDto {
         login: user.login,
         email: user.email,
         createdAt: user.createdAt
+    };
+}
+
+// TODO: rename, types(in, out) - конвертация для внутренних сервисов
+export function convertFullUserInfo(user: WithId<User>): UserWithoutPassword {
+    return {
+        login: user.login,
+        email: user.email,
+        createdAt: user.createdAt,
+        emailConfirmation: user.emailConfirmation
     };
 }
 

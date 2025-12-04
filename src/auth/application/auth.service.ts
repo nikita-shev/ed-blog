@@ -69,7 +69,7 @@ export const authService = {
         if (!emailSendingStatus.data) {
             await usersService.deleteUser(result);
             return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
-                { field: 'registration', message: 'Problems registering. Please try again later.' }
+                { field: 'login', message: 'Problems registering. Please try again later.' }
             ]);
         }
 
@@ -84,7 +84,10 @@ export const authService = {
 
     async resendEmail(email: string): Promise<ResultObject<boolean> | ResultObject<null>> {
         const user = await usersRepository.findUser(email);
-        if (!user) return createResultObject(null, ResultStatus.NotFound);
+        if (!user)
+            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+                { field: 'email', message: 'email not found' }
+            ]);
 
         const { emailConfirmation } = user;
         if (emailConfirmation.isConfirmed) {
@@ -96,10 +99,13 @@ export const authService = {
             ]);
         }
 
+        const newCode = crypto.randomUUID();
+        await usersRepository.updateConfirmationCode(user._id, newCode); // TODO: обработать результат?
+
         const emailSendingStatus = await emailAdapter.sendEmail(
             user.email,
             'resend',
-            createMessage(emailConfirmation.confirmationCode)
+            createMessage(newCode)
         );
         if (!emailSendingStatus.data) {
             return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [

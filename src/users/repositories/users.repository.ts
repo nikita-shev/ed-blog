@@ -51,6 +51,13 @@ export const usersRepository = {
         );
     },
 
+    async updateConfirmationCode(userId: ObjectId, code: string): Promise<void> {
+        await userCollection.updateOne(
+            { _id: userId },
+            { $set: { 'emailConfirmation.confirmationCode': code } }
+        );
+    },
+
     async deleteUser(id: string): Promise<boolean> {
         const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
 

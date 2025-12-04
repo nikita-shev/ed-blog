@@ -1,7 +1,7 @@
 import { body } from 'express-validator';
 
 const SETTINGS = {
-    pattern: '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$'
+    pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
 };
 
 export const emailValidation = body('email')

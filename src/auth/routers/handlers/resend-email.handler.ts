@@ -10,7 +10,7 @@ export async function resendEmailHandler(
     const status = resultCodeToHttpException(result.status);
 
     if (!result.data) {
-        return res.status(status).send(result.extensions);
+        return res.status(status).send({ errorsMessages: result.extensions });
     }
 
     res.sendStatus(status);

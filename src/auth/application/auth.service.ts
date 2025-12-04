@@ -15,7 +15,7 @@ import { createMessage, emailAdapter } from '../../adapters/email-adapter';
 export const authService = {
     // TODO: rename "checkUser"
     async checkUser(credentials: AuthInputDto): NullableResultObject<AccessToken> {
-        const result = await usersRepository.findUser(credentials.loginOrEmail);
+        const result = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
 
         if (!result) {
             return createResultObject(null, ResultStatus.Unauthorized);
@@ -80,5 +80,36 @@ export const authService = {
         code: string
     ): Promise<ResultObject<boolean> | ResultObject<null>> {
         return usersService.confirmUser(code);
+    },
+
+    async resendEmail(email: string): Promise<ResultObject<boolean> | ResultObject<null>> {
+        const user = await usersRepository.findUser(email);
+        if (!user) return createResultObject(null, ResultStatus.NotFound);
+
+        const { emailConfirmation } = user;
+        if (emailConfirmation.isConfirmed) {
+            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+                {
+                    field: 'email',
+                    message: 'email verified'
+                }
+            ]);
+        }
+
+        const emailSendingStatus = await emailAdapter.sendEmail(
+            user.email,
+            'resend',
+            createMessage(emailConfirmation.confirmationCode)
+        );
+        if (!emailSendingStatus.data) {
+            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+                {
+                    field: 'resend',
+                    message: 'Problems with email confirmation. Please try again later.'
+                }
+            ]);
+        }
+
+        return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
     }
 };

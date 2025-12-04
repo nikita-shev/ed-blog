@@ -1,5 +1,6 @@
 import { ExtensionType, ResultObject, ResultStatus } from '../result-object.types';
 
+// TODO: добавить во всех местах, где используется createResultObject, сообщения об ошибках
 export function createResultObject<T>(
     data: T,
     status: ResultStatus = ResultStatus.Success,

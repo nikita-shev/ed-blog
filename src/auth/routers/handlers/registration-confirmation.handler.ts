@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
-import { RegistrationInputDto } from '../../dto/auth.dto';
 import { authService } from '../../application/auth.service';
 import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
 
-export async function registrationUserHandler(
-    req: Request<{}, {}, RegistrationInputDto>,
+export async function registrationConfirmationHandler(
+    req: Request<{}, {}, { code: string }>,
     res: Response
 ) {
-    const result = await authService.registrationUser(req.body);
+    const result = await authService.confirmRegistrationUser(req.body.code);
     const status = resultCodeToHttpException(result.status);
 
     if (!result.data) {

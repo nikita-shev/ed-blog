@@ -6,6 +6,7 @@ import { authBearerMiddleware } from '../../core/middlewares/auth.middleware';
 import { getInfoAboutUserHandler } from './handlers/get-info-about-user.handler';
 import { userInputDtoValidation } from '../../users/middlewares/validation/input-dto-validation';
 import { registrationUserHandler } from './handlers/registration-user.handler';
+import { registrationConfirmationHandler } from './handlers/registration-confirmation.handler';
 
 export const authRouter = Router();
 
@@ -17,4 +18,5 @@ authRouter
         userInputDtoValidation,
         inputValidationResultMiddleware,
         registrationUserHandler
-    ); // TODO: так можно (userInputDtoValidation в authRouter)?
+    ) // TODO: так можно (userInputDtoValidation в authRouter)?
+    .post('/registration-confirmation', registrationConfirmationHandler);

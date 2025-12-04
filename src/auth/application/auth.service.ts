@@ -74,5 +74,11 @@ export const authService = {
         }
 
         return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
+    },
+
+    async confirmRegistrationUser(
+        code: string
+    ): Promise<ResultObject<boolean> | ResultObject<null>> {
+        return usersService.confirmUser(code);
     }
 };

@@ -10,6 +10,7 @@ import { confirmRegistrationHandler } from './handlers/confirm-registration.hand
 import { emailValidation } from '../../users/middlewares/validation/input-dto-validation/modules/email.validation';
 import { resendEmailHandler } from './handlers/resend-email.handler';
 import { replaceRefreshTokenHandler } from './handlers/replace-refresh-token.handler';
+import { checkRefreshTokenMiddleware } from '../middlewares/authorizations/check-refresh-token.middleware';
 
 export const authRouter = Router();
 
@@ -29,6 +30,6 @@ authRouter
         inputValidationResultMiddleware,
         resendEmailHandler
     )
-    .post('/refresh-token', replaceRefreshTokenHandler);
+    .post('/refresh-token', checkRefreshTokenMiddleware, replaceRefreshTokenHandler);
 
 // TODO: вынести "path" в enam

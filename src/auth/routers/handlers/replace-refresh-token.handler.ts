@@ -6,8 +6,9 @@ import { PATHS } from '../../../core/constants/paths';
 import { TokenOutputDto } from '../../dto/auth.dto';
 
 export async function replaceRefreshTokenHandler(req: Request, res: Response<TokenOutputDto>) {
+    const userId = req.appContext.userId as string;
     // TODO: типизация для req.cookies.refreshToken. как?
-    const result = await authService.replaceRefreshToken(req.cookies.refreshToken);
+    const result = await authService.replaceRefreshToken(userId, req.cookies.refreshToken);
     const status = resultCodeToHttpException(result.status);
 
     if (!result.data) {

@@ -3,10 +3,10 @@ import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';
 import {
-    AuthorizationTokens,
     AuthInputDto,
-    RegistrationInputDto,
-    RefreshToken
+    AuthorizationTokens,
+    RefreshToken,
+    RegistrationInputDto
 } from '../dto/auth.dto';
 import {
     NullableResultObject,
@@ -128,16 +128,23 @@ export const authService = {
         return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
     },
 
-    async replaceRefreshToken(token: RefreshToken): NullableResultObject<AuthorizationTokens> {
-        const isValidToken = await authRepository.checkToken(token);
-        if (!isValidToken) return createResultObject(null, ResultStatus.Unauthorized);
+    // TODO: вынести работу с черным списком в отдельный сервис/репозиторий
+    async findTokenOnBlackList(token: RefreshToken): Promise<ResultObject<boolean>> {
+        const isTokenFound = await authRepository.findBlockedToken(token);
 
-        const result = jwtService.checkToken(token);
-        if (!result.data) return result;
+        return createResultObject(
+            isTokenFound,
+            isTokenFound ? ResultStatus.Unauthorized : ResultStatus.Success
+        );
+    },
 
+    async replaceRefreshToken(
+        userId: string,
+        token: RefreshToken
+    ): NullableResultObject<AuthorizationTokens> {
         await authRepository.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
 
-        const payload = { userId: result.data.userId }; // TODO: что хранить в payload`е для refreshToken ???
+        const payload = { userId }; // TODO: что хранить в payload`е для refreshToken ???
         const accessToken = jwtService.createToken(payload, { expiresIn: '10s' });
         const refreshToken = jwtService.createToken(payload, { expiresIn: '20s' });
 

@@ -1,11 +1,12 @@
 import { RefreshToken } from '../dto/auth.dto';
 import { blackListCollection } from '../../db/db.config';
 
+// TODO: вынести работу с черным списком в отдельный сервис/репозиторий
 export const authRepository = {
-    async checkToken(token: RefreshToken): Promise<boolean> {
+    async findBlockedToken(token: RefreshToken): Promise<boolean> {
         const result = await blackListCollection.findOne({ refreshToken: token });
 
-        return !Boolean(result);
+        return Boolean(result);
     },
 
     async addRefreshTokenToBlackList(token: RefreshToken): Promise<boolean> {

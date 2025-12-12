@@ -15,11 +15,19 @@ export async function replaceRefreshTokenHandler(req: Request, res: Response<Tok
         return res.sendStatus(status);
     }
 
-    res.cookie('refreshToken', result.data.refreshToken, {
+    const cookieOptions = {
         httpOnly: true,
         secure: true,
-        expires: add(new Date(), { days: 1 }),
+        expires: add(new Date(), { days: 1 })
+    };
+    res.cookie('refreshToken', result.data.refreshToken, {
+        ...cookieOptions,
         path: `${PATHS.auth}/refresh-token` // TODO: fix /refresh-token
     });
+    res.cookie('refreshToken', result.data.refreshToken, {
+        ...cookieOptions,
+        path: `${PATHS.auth}/logout` // TODO: fix /logout
+    });
+
     res.status(status).send({ accessToken: result.data.accessToken });
 }

@@ -11,6 +11,7 @@ import { emailValidation } from '../../users/middlewares/validation/input-dto-va
 import { resendEmailHandler } from './handlers/resend-email.handler';
 import { replaceRefreshTokenHandler } from './handlers/replace-refresh-token.handler';
 import { checkRefreshTokenMiddleware } from '../middlewares/authorizations/check-refresh-token.middleware';
+import { logoutHandler } from './handlers/logout.handler';
 
 export const authRouter = Router();
 
@@ -30,6 +31,7 @@ authRouter
         inputValidationResultMiddleware,
         resendEmailHandler
     )
-    .post('/refresh-token', checkRefreshTokenMiddleware, replaceRefreshTokenHandler);
+    .post('/refresh-token', checkRefreshTokenMiddleware, replaceRefreshTokenHandler)
+    .post('/logout', checkRefreshTokenMiddleware, logoutHandler);
 
 // TODO: вынести "path" в enam

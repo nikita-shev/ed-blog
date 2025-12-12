@@ -137,12 +137,17 @@ export const authService = {
             isTokenFound ? ResultStatus.Unauthorized : ResultStatus.Success
         );
     },
+    async addRefreshTokenToBlackList(token: RefreshToken): Promise<ResultObject<boolean>> {
+        await authRepository.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
+
+        return createResultObject(true, ResultStatus.NoContent);
+    },
 
     async replaceRefreshToken(
         userId: string,
         token: RefreshToken
     ): NullableResultObject<AuthorizationTokens> {
-        await authRepository.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
+        await this.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
 
         const payload = { userId }; // TODO: что хранить в payload`е для refreshToken ???
         const accessToken = jwtService.createToken(payload, { expiresIn: '10s' });

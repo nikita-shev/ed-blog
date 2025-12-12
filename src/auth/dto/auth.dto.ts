@@ -15,6 +15,9 @@ export interface AuthorizationTokens {
     accessToken: AccessToken;
     refreshToken: RefreshToken;
 }
+export interface TokenOutputDto { // TODO: rename
+    accessToken: AccessToken;
+}
 
 // registration ===>
 

@@ -1,4 +1,4 @@
-const basePath = 'hometask_07';
+const basePath = 'hometask_08';
 
 export enum PATHS {
     blogs = `/${basePath}/api/blogs`,

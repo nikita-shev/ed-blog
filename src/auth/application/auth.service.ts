@@ -2,7 +2,12 @@ import bcrypt from 'bcrypt';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';
-import { AuthorizationTokens, AuthInputDto, RegistrationInputDto } from '../dto/auth.dto';
+import {
+    AuthorizationTokens,
+    AuthInputDto,
+    RegistrationInputDto,
+    RefreshToken
+} from '../dto/auth.dto';
 import {
     NullableResultObject,
     ResultObject,
@@ -11,6 +16,7 @@ import {
 import { CurrentUser } from '../types/auth.types';
 import { usersService } from '../../users/application/users.service';
 import { createMessage, emailAdapter } from '../../adapters/email-adapter';
+import { authRepository } from '../repositories/auth.repository';
 
 export const authService = {
     // TODO: rename "checkUser"
@@ -120,5 +126,24 @@ export const authService = {
         }
 
         return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
+    },
+
+    async replaceRefreshToken(token: RefreshToken): NullableResultObject<AuthorizationTokens> {
+        const isValidToken = await authRepository.checkToken(token);
+        if (!isValidToken) return createResultObject(null, ResultStatus.Unauthorized);
+
+        const result = jwtService.checkToken(token);
+        if (!result.data) return result;
+
+        await authRepository.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
+
+        const payload = { userId: result.data.userId }; // TODO: что хранить в payload`е для refreshToken ???
+        const accessToken = jwtService.createToken(payload, { expiresIn: '10s' });
+        const refreshToken = jwtService.createToken(payload, { expiresIn: '20s' });
+
+        return createResultObject({
+            accessToken: accessToken.data,
+            refreshToken: refreshToken.data
+        });
     }
 };

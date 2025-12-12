@@ -3,13 +3,11 @@ import { add } from 'date-fns';
 import { authService } from '../../application/auth.service';
 import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
 import { PATHS } from '../../../core/constants/paths';
-import { AuthInputDto, TokenOutputDto } from '../../dto/auth.dto';
+import { TokenOutputDto } from '../../dto/auth.dto';
 
-export async function checkUserHandler(
-    req: Request<{}, {}, AuthInputDto>,
-    res: Response<TokenOutputDto>
-) {
-    const result = await authService.checkUser(req.body);
+export async function replaceRefreshTokenHandler(req: Request, res: Response<TokenOutputDto>) {
+    // TODO: типизация для req.cookies.refreshToken. как?
+    const result = await authService.replaceRefreshToken(req.cookies.refreshToken);
     const status = resultCodeToHttpException(result.status);
 
     if (!result.data) {

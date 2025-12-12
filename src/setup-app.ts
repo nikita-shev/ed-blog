@@ -1,4 +1,5 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
+import cookieParser from 'cookie-parser';
 import { PATHS } from './core/constants/paths';
 import { blogsRouter } from './blogs/routers/blogs.router';
 import { postsRouter } from './posts/routers/posts.router';
@@ -9,6 +10,7 @@ import { commentsRouter } from './routes/comments/routers/comments.router';
 
 export function setupApp(app: Express) {
     app.use(express.json());
+    app.use(cookieParser());
 
     app.use(PATHS.blogs, blogsRouter);
     app.use(PATHS.posts, postsRouter);

@@ -9,8 +9,8 @@ interface Payload {
 const secretKey = process.env.SECRET_KEY as string;
 
 export const jwtService = {
-    createToken(payload: Payload): ResultObject<string> {
-        const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
+    createToken(payload: Payload, options: jwt.SignOptions): ResultObject<string> {
+        const token = jwt.sign(payload, secretKey, options);
 
         return createResultObject(token);
     },

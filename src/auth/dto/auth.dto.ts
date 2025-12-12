@@ -9,8 +9,11 @@ export interface AuthOutputDto {
     userId: string;
 }
 
-export interface AccessToken {
-    accessToken: string;
+export type AccessToken = string;
+export type RefreshToken = string;
+export interface AuthorizationTokens {
+    accessToken: AccessToken;
+    refreshToken: RefreshToken;
 }
 
 // registration ===>

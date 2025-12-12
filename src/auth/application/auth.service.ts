@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';
-import { AccessToken, AuthInputDto, RegistrationInputDto } from '../dto/auth.dto';
+import { AuthorizationTokens, AuthInputDto, RegistrationInputDto } from '../dto/auth.dto';
 import {
     NullableResultObject,
     ResultObject,
@@ -14,7 +14,7 @@ import { createMessage, emailAdapter } from '../../adapters/email-adapter';
 
 export const authService = {
     // TODO: rename "checkUser"
-    async checkUser(credentials: AuthInputDto): NullableResultObject<AccessToken> {
+    async checkUser(credentials: AuthInputDto): NullableResultObject<AuthorizationTokens> {
         const result = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
 
         if (!result) {
@@ -24,10 +24,13 @@ export const authService = {
         const isUser = await bcrypt.compare(credentials.password, result.password);
 
         if (isUser) {
-            const token = jwtService.createToken({ userId: result._id.toString() });
+            const payload = { userId: result._id.toString() }; // TODO: что хранить в payload`е для refreshToken ???
+            const accessToken = jwtService.createToken(payload, { expiresIn: '10s' });
+            const refreshToken = jwtService.createToken(payload, { expiresIn: '20s' });
 
             return createResultObject({
-                accessToken: token.data
+                accessToken: accessToken.data,
+                refreshToken: refreshToken.data
             });
         } else {
             return createResultObject(null, ResultStatus.Unauthorized);

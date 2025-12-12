@@ -14,5 +14,6 @@ export async function checkUserHandler(
         return res.sendStatus(status);
     }
 
-    res.status(status).send(result.data);
+    res.cookie('refreshToken', result.data.refreshToken, { httpOnly: true, secure: true });
+    res.status(status).send(result.data.accessToken);
 }

@@ -3,7 +3,7 @@ import { authService } from '../../application/auth.service';
 import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
 
 export async function logoutHandler(req: Request, res: Response) {
-    const result = await authService.addRefreshTokenToBlackList(req.cookies.refreshToken);
+    const result = await authService.deleteSession(req.cookies.refreshToken);
     const status = resultCodeToHttpException(result.status);
 
     if (!result.data) {

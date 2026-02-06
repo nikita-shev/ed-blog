@@ -157,10 +157,11 @@ export const authService = {
         );
     },
 
-    async addRefreshTokenToBlackList(token: RefreshToken): Promise<ResultObject<boolean>> {
-        await authRepository.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
+    async deleteSession(token: RefreshToken): Promise<ResultObject<boolean>> {
+        const { data } = jwtService.decode<RefreshTokenPayload>(token);
+        const result = await authRepository.deleteSession(data.deviceId);
 
-        return createResultObject(true, ResultStatus.NoContent);
+        return createResultObject(result, ResultStatus.NoContent);
     },
 
     async replaceRefreshToken(
@@ -175,7 +176,11 @@ export const authService = {
         );
 
         const result = jwtService.decode<RefreshTokenPayload>(refreshToken.data);
-        await authRepository.replaceUserSession(result.data);
+        await authRepository.replaceUserSession({
+            ...result.data,
+            iat: new Date(result.data.iat).toISOString(),
+            exp: new Date(result.data.exp).toISOString()
+        });
 
         return createResultObject({
             accessToken: accessToken.data,

@@ -5,12 +5,6 @@ import { RefreshTokenPayload } from '../application/auth.service';
 
 // TODO: вынести работу с черным списком в отдельный сервис/репозиторий
 export const authRepository = {
-    async addRefreshTokenToBlackList(token: RefreshToken): Promise<boolean> {
-        const result = await blackListCollection.insertOne({ refreshToken: token });
-
-        return Boolean(result.insertedId); // TODO: нужен try{}catch при работе с БД?
-    },
-
     async addUserSession(data: UserSessionData): Promise<boolean> {
         const result = await sessionsCollection.insertOne(data);
 
@@ -37,5 +31,11 @@ export const authRepository = {
         );
 
         return result.matchedCount === 1;
+    },
+
+    async deleteSession(deviceId: string): Promise<boolean> {
+        const result = await sessionsCollection.deleteOne({ deviceId });
+
+        return result.deletedCount === 1; // TODO: нужен try{}catch при работе с БД?
     }
 };

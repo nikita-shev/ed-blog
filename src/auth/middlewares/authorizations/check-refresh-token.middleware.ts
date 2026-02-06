@@ -12,7 +12,7 @@ export async function checkRefreshTokenMiddleware(req: Request, res: Response, n
     }
 
     const tokenSearchResult = await authService.findSession(token);
-    if (tokenSearchResult.data) {
+    if (!tokenSearchResult.data) {
         return res.sendStatus(resultCodeToHttpException(tokenSearchResult.status));
     }
 

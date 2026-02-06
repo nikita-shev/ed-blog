@@ -4,6 +4,7 @@ import { createResultObject } from '../result-object/utils/createResultObject';
 
 interface Payload {
     userId: string;
+    deviceId?: string; // TODO: fix
 }
 
 const secretKey = process.env.SECRET_KEY as string;
@@ -32,7 +33,9 @@ export const jwtService = {
     },
 
     // TODO: fix type
-    decode(token: string): ResultObject<any> {
-        return createResultObject(jwt.decode(token));
+    decode<T>(token: string): ResultObject<T> {
+        const payload = jwt.decode(token);
+
+        return createResultObject(payload as T);
     }
 };

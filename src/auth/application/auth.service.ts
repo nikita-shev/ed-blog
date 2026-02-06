@@ -18,6 +18,7 @@ import { CurrentUser, ServiceInfo } from '../types/auth.types';
 import { usersService } from '../../users/application/users.service';
 import { createMessage, emailAdapter } from '../../adapters/email-adapter';
 import { authRepository } from '../repositories/auth.repository';
+import { UserSessionData } from '../types/sessions.types';
 
 export const authService = {
     // TODO: rename "checkUser"
@@ -37,15 +38,15 @@ export const authService = {
             const atPayload = { userId: result._id.toString() };
             const rtPayload = {
                 userId: result._id.toString(),
-                deviceId: uuid(),
-                device: serviceInfo?.device
+                deviceId: uuid()
             };
             const accessToken = jwtService.createToken(atPayload, { expiresIn: '10s' });
             const refreshToken = jwtService.createToken(rtPayload, { expiresIn: '20s' });
-            const payload = jwtService.decode(refreshToken.data);
 
+            const payload = jwtService.decode<RefreshTokenPayload>(refreshToken.data); // TODO: Fix "any"
             const d = {
                 // TODO: fix types, names, move
+                device: serviceInfo?.device ?? '',
                 iat: new Date(payload.data.iat).toISOString(),
                 exp: new Date(payload.data.exp).toISOString()
             };
@@ -145,16 +146,17 @@ export const authService = {
         return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
     },
 
-    // TODO: вынести работу с черным списком в отдельный сервис/репозиторий
-    // BlackList -> usedRefreshTokens
-    async findTokenOnBlackList(token: RefreshToken): Promise<ResultObject<boolean>> {
-        const isTokenFound = await authRepository.findBlockedToken(token);
+    // TODO: move sessions???
+    async findSession(token: RefreshToken): Promise<ResultObject<boolean>> {
+        const { data: payload } = jwtService.decode<UserSessionData>(token);
+        const isValidToken = await authRepository.findSession(payload);
 
         return createResultObject(
-            isTokenFound,
-            isTokenFound ? ResultStatus.Unauthorized : ResultStatus.Success
+            isValidToken,
+            isValidToken ? ResultStatus.Success : ResultStatus.Unauthorized
         );
     },
+
     async addRefreshTokenToBlackList(token: RefreshToken): Promise<ResultObject<boolean>> {
         await authRepository.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
 
@@ -162,14 +164,18 @@ export const authService = {
     },
 
     async replaceRefreshToken(
-        userId: string,
+        userId: string, // TODO: нужен?
         token: RefreshToken
     ): NullableResultObject<AuthorizationTokens> {
-        await this.addRefreshTokenToBlackList(token); // TODO: обрабатывать результат выполнения ???
+        const { data } = jwtService.decode<RefreshTokenPayload>(token);
+        const accessToken = jwtService.createToken({ userId: data.userId }, { expiresIn: '10s' });
+        const refreshToken = jwtService.createToken(
+            { userId: data.userId, deviceId: data.deviceId },
+            { expiresIn: '20s' }
+        );
 
-        const payload = { userId }; // TODO: что хранить в payload`е для refreshToken ???
-        const accessToken = jwtService.createToken(payload, { expiresIn: '10s' });
-        const refreshToken = jwtService.createToken(payload, { expiresIn: '20s' });
+        const result = jwtService.decode<RefreshTokenPayload>(refreshToken.data);
+        await authRepository.replaceUserSession(result.data);
 
         return createResultObject({
             accessToken: accessToken.data,
@@ -177,3 +183,13 @@ export const authService = {
         });
     }
 };
+
+// TODO: Логика формирования jwt в методах replaceRefreshToken и checkUser дублируется. Исрпавить.
+
+// TODO: move
+export interface RefreshTokenPayload {
+    userId: string;
+    deviceId: string;
+    iat: string;
+    exp: string;
+}

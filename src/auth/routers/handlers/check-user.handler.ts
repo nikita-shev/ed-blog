@@ -9,13 +9,15 @@ export async function checkUserHandler(
     req: Request<{}, {}, AuthInputDto>,
     res: Response<TokenOutputDto>
 ) {
-    const result = await authService.checkUser(req.body);
+    const serviceInfo = { device: req.get('User-agent') };
+    const result = await authService.checkUser(req.body, serviceInfo);
     const status = resultCodeToHttpException(result.status);
 
     if (!result.data) {
         return res.sendStatus(status);
     }
 
+    // TODO: move to utils
     const cookieOptions = {
         httpOnly: true,
         secure: true,

@@ -5,6 +5,7 @@ import { Post } from '../posts/types/posts.types';
 import { User } from '../users/types/users.types';
 import { Comment } from '../routes/comments/types/comments.types';
 import { BlackList } from '../core/types/blacklist.types';
+import { Session } from '../auth/types/sessions.types';
 
 dotenv.config();
 
@@ -15,7 +16,8 @@ export let blogCollection: Collection<Blog>;
 export let postCollection: Collection<Post>;
 export let userCollection: Collection<User>;
 export let commentCollection: Collection<Comment>;
-export let blackListCollection: Collection<BlackList>;
+export let sessionsCollection: Collection<Session>;
+export let blackListCollection: Collection<BlackList>;// TODO: delete
 
 export async function runDB(dbUrl = mongoURL) {
     if (!dbUrl) {
@@ -30,7 +32,8 @@ export async function runDB(dbUrl = mongoURL) {
         postCollection = db.collection<Post>('posts');
         userCollection = db.collection<User>('users');
         commentCollection = db.collection<Comment>('comment');
-        blackListCollection = db.collection<BlackList>('blackList');
+        sessionsCollection = db.collection<Session>('sessions');
+        blackListCollection = db.collection<BlackList>('blackList'); // TODO: delete
 
         // await client.connect();
         // await db.command({ ping: 1 });

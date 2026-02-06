@@ -29,5 +29,10 @@ export const jwtService = {
             //     { field: 'loginOrEmail', message: 'Wrong credentials' }
             // ]);
         }
+    },
+
+    // TODO: fix type
+    decode(token: string): ResultObject<any> {
+        return createResultObject(jwt.decode(token));
     }
 };

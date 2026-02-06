@@ -1,5 +1,6 @@
 import { RefreshToken } from '../dto/auth.dto';
-import { blackListCollection } from '../../db/db.config';
+import { blackListCollection, sessionsCollection } from '../../db/db.config';
+import { UserSessionData } from '../types/sessions.types';
 
 // TODO: вынести работу с черным списком в отдельный сервис/репозиторий
 export const authRepository = {
@@ -13,5 +14,11 @@ export const authRepository = {
         const result = await blackListCollection.insertOne({ refreshToken: token });
 
         return Boolean(result.insertedId); // TODO: нужен try{}catch при работе с БД?
+    },
+
+    async addUserSession(data: UserSessionData): Promise<boolean> {
+        const result = await sessionsCollection.insertOne(data);
+
+        return Boolean(result.insertedId);
     }
 };

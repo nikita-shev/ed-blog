@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';
@@ -13,14 +14,17 @@ import {
     ResultObject,
     ResultStatus
 } from '../../core/result-object/result-object.types';
-import { CurrentUser } from '../types/auth.types';
+import { CurrentUser, ServiceInfo } from '../types/auth.types';
 import { usersService } from '../../users/application/users.service';
 import { createMessage, emailAdapter } from '../../adapters/email-adapter';
 import { authRepository } from '../repositories/auth.repository';
 
 export const authService = {
     // TODO: rename "checkUser"
-    async checkUser(credentials: AuthInputDto): NullableResultObject<AuthorizationTokens> {
+    async checkUser(
+        credentials: AuthInputDto,
+        serviceInfo?: ServiceInfo
+    ): NullableResultObject<AuthorizationTokens> {
         const result = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
 
         if (!result) {
@@ -30,9 +34,22 @@ export const authService = {
         const isUser = await bcrypt.compare(credentials.password, result.password);
 
         if (isUser) {
-            const payload = { userId: result._id.toString() }; // TODO: что хранить в payload`е для refreshToken ???
-            const accessToken = jwtService.createToken(payload, { expiresIn: '10s' });
-            const refreshToken = jwtService.createToken(payload, { expiresIn: '20s' });
+            const atPayload = { userId: result._id.toString() };
+            const rtPayload = {
+                userId: result._id.toString(),
+                deviceId: uuid(),
+                device: serviceInfo?.device
+            };
+            const accessToken = jwtService.createToken(atPayload, { expiresIn: '10s' });
+            const refreshToken = jwtService.createToken(rtPayload, { expiresIn: '20s' });
+            const payload = jwtService.decode(refreshToken.data);
+
+            const d = {
+                // TODO: fix types, names, move
+                iat: new Date(payload.data.iat).toISOString(),
+                exp: new Date(payload.data.exp).toISOString()
+            };
+            await authRepository.addUserSession({ ...rtPayload, ...payload.data, ...d }); // TODO: делать проверку, что всё ок???
 
             return createResultObject({
                 accessToken: accessToken.data,
@@ -129,6 +146,7 @@ export const authService = {
     },
 
     // TODO: вынести работу с черным списком в отдельный сервис/репозиторий
+    // BlackList -> usedRefreshTokens
     async findTokenOnBlackList(token: RefreshToken): Promise<ResultObject<boolean>> {
         const isTokenFound = await authRepository.findBlockedToken(token);
 

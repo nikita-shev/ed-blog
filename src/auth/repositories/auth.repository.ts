@@ -1,5 +1,4 @@
-import { RefreshToken } from '../dto/auth.dto';
-import { blackListCollection, sessionsCollection } from '../../db/db.config';
+import { sessionsCollection } from '../../db/db.config';
 import { UserSessionData } from '../types/sessions.types';
 import { RefreshTokenPayload } from '../application/auth.service';
 

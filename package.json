@@ -22,8 +22,7 @@
         "express-validator": "^7.3.0",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "^6.20.0",
-        "nodemailer": "^7.0.11",
-        "uuid": "^13.0.0"
+        "nodemailer": "^7.0.11"
     },
     "devDependencies": {
         "@darbitdev/prettier-config": "^0.0.1",

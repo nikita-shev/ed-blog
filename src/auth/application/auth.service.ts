@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { v1 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';
@@ -61,7 +61,7 @@ export const authService = {
         // ======>
         const accessToken = jwtService.createToken({ userId }, { expiresIn: '10s' });
         const refreshToken = jwtService.createToken(
-            { userId, deviceId: uuid() },
+            { userId, deviceId: randomUUID() },
             { expiresIn: '20s' }
         );
 

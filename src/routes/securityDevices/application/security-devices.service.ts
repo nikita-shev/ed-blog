@@ -31,7 +31,7 @@ class SecurityDevicesService {
 
         const foundSession = await authRepository.findSessionByDeviceId(payload.userId, deviceId);
 
-        if (!foundSession) return createResultObject(null, ResultStatus.BadRequest);
+        if (!foundSession) return createResultObject(null, ResultStatus.Forbidden);
 
         const deletedResult = await securityDevicesRepository.terminateSpecifiedDeviceSession(
             foundSession.userId,

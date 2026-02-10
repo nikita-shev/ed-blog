@@ -5,6 +5,7 @@ import { Post } from '../posts/types/posts.types';
 import { User } from '../users/types/users.types';
 import { Comment } from '../routes/comments/types/comments.types';
 import { Session } from '../auth/types/sessions.types';
+import { RateLimitDto } from '../core/application/rate-limit.service';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ export let postCollection: Collection<Post>;
 export let userCollection: Collection<User>;
 export let commentCollection: Collection<Comment>;
 export let sessionsCollection: Collection<Session>;
+export let rateLimitCollection: Collection<RateLimitDto>;
 
 export async function runDB(dbUrl = mongoURL) {
     if (!dbUrl) {
@@ -31,6 +33,7 @@ export async function runDB(dbUrl = mongoURL) {
         userCollection = db.collection<User>('users');
         commentCollection = db.collection<Comment>('comment');
         sessionsCollection = db.collection<Session>('sessions');
+        rateLimitCollection = db.collection<RateLimitDto>('rate-limit');
 
         // await client.connect();
         // await db.command({ ping: 1 });

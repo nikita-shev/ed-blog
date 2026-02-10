@@ -7,6 +7,8 @@ async function startApp() {
         const app = express();
         const PORT = process.env.PORT || 3000;
 
+        app.set('trust proxy', true)
+
         setupApp(app);
         await runDB();
 

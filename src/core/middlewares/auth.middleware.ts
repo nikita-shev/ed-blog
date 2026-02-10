@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../constants/http-statuses';
 import { jwtService } from '../application/jwt.service';
 import { resultCodeToHttpException } from '../result-object/utils/resultCodeToHttpException';
+import { RateLimitInputDto, rateLimitService } from '../application/rate-limit.service';
 
 const USERNAME = 'admin';
 const PASSWORD = 'qwerty';
@@ -48,6 +49,23 @@ export function authBearerMiddleware(req: Request, res: Response, next: NextFunc
         // });
     } else {
         req.appContext = { userId: result.data.userId };
+        next();
+    }
+}
+
+export async function authRateLimitMiddleware(req: Request, res: Response, next: NextFunction) {
+    const data: RateLimitInputDto = {
+        ip: req.ip ?? '',
+        url: req.originalUrl,
+        date: new Date().toISOString()
+    };
+
+    const result = await rateLimitService.getData(data.url, data.ip);
+
+    if (!result.data) {
+        return res.sendStatus(429); // TODO: fix 429
+    } else {
+        await rateLimitService.saveData(data);
         next();
     }
 }

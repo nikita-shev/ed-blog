@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { v4 as uuid } from 'uuid';
+import { v1 as uuid } from 'uuid';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
 import { createResultObject } from '../../core/result-object/utils/createResultObject';

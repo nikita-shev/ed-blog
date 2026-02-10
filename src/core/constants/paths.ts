@@ -6,5 +6,6 @@ export enum PATHS {
     posts = `/${basePath}/api/posts`,
     auth = `/${basePath}/api/auth`,
     comments = `/${basePath}/api/comments`,
+    securityDevices = `/${basePath}/api/security`,
     testing = `/${basePath}/api/testing`
 }

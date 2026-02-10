@@ -7,6 +7,7 @@ import { testingRouter } from './testing/testing.router';
 import { usersRouter } from './users/routers/users.router';
 import { authRouter } from './auth/routers/auth.router';
 import { commentsRouter } from './routes/comments/routers/comments.router';
+import { securityDevices } from './routes/securityDevices/routers/security-devices.router';
 
 export function setupApp(app: Express) {
     app.use(express.json());
@@ -17,6 +18,7 @@ export function setupApp(app: Express) {
     app.use(PATHS.users, usersRouter);
     app.use(PATHS.auth, authRouter);
     app.use(PATHS.comments, commentsRouter);
+    app.use(PATHS.securityDevices, securityDevices);
     app.use(PATHS.testing, testingRouter);
 
     app.use(errorHandler); // TODO: fix

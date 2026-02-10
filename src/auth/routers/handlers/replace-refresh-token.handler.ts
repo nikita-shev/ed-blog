@@ -28,6 +28,10 @@ export async function replaceRefreshTokenHandler(req: Request, res: Response<Tok
         ...cookieOptions,
         path: `${PATHS.auth}/logout` // TODO: fix /logout
     });
+    res.cookie('refreshToken', result.data.refreshToken, {
+        ...cookieOptions,
+        path: `${PATHS.securityDevices}` // TODO: fix
+    });
 
     res.status(status).send({ accessToken: result.data.accessToken });
 }

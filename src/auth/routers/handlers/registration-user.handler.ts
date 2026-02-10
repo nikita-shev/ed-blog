@@ -10,11 +10,9 @@ export async function registrationUserHandler(
     const result = await authService.registrationUser(req.body);
     const status = resultCodeToHttpException(result.status);
 
-    return res.sendStatus(429); // TODO: временно, вернуть коммент ниже
+    if (!result.data) {
+        return res.status(status).send({ errorsMessages: result.extensions });
+    }
 
-    // if (!result.data) {
-    //     return res.status(status).send({ errorsMessages: result.extensions });
-    // }
-    //
-    // res.sendStatus(status);
+    res.sendStatus(status);
 }

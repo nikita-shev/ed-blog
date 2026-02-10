@@ -63,7 +63,7 @@ class RateLimitRepo {
                                     $and: [
                                         { $eq: ['$$item.ip', ip] },
                                         {
-                                            $gt: [
+                                            $gte: [
                                                 '$$item.date',
                                                 new Date(Date.now() - 10 * 1000).toISOString()
                                             ]

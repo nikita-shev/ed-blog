@@ -29,19 +29,32 @@ class SecurityDevicesService {
     async terminateSpecifiedDeviceSession(token: string, deviceId: string): Promise<ResultObject> {
         const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
 
-        const foundSession = await authRepository.findSessionByDeviceId(payload.userId, deviceId);
-
-        if (!foundSession) return createResultObject(null, ResultStatus.Forbidden);
+        const foundSession = await authRepository.findSessionByDeviceId(deviceId);
+        if (!foundSession) return createResultObject(null, ResultStatus.NotFound);
 
         const deletedResult = await securityDevicesRepository.terminateSpecifiedDeviceSession(
-            foundSession.userId,
-            foundSession.deviceId
+            payload.userId,
+            deviceId
         );
 
         return createResultObject(
             null,
-            deletedResult ? ResultStatus.NoContent : ResultStatus.NotFound
+            deletedResult ? ResultStatus.NoContent : ResultStatus.Forbidden
         );
+
+        // const foundSession = await authRepository.findSessionByDeviceId(payload.userId, deviceId);
+        //
+        // if (!foundSession) return createResultObject(null, ResultStatus.Forbidden);
+        //
+        // const deletedResult = await securityDevicesRepository.terminateSpecifiedDeviceSession(
+        //     foundSession.userId,
+        //     foundSession.deviceId
+        // );
+        //
+        // return createResultObject(
+        //     null,
+        //     deletedResult ? ResultStatus.NoContent : ResultStatus.NotFound
+        // );
     }
 }
 

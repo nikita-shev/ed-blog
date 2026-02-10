@@ -20,8 +20,10 @@ export const authRepository = {
     },
 
     // TODO: сделать сервис и заменить во всех местах
-    async findSessionByDeviceId(userId: string, deviceId: string): Promise<SessionWithId | null> {
-        return await sessionsCollection.findOne({ userId, deviceId });
+    async findSessionByDeviceId(deviceId: string): Promise<SessionWithId | null> {
+        // return await sessionsCollection.findOne({ userId, deviceId });
+
+        return await sessionsCollection.findOne({ deviceId });
     },
 
     // TODO: rename -> findSessionByToken

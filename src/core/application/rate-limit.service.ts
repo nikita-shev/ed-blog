@@ -32,7 +32,7 @@ class RateLimitService {
         if (!result.length) return createResultObject(true, ResultStatus.NotFound);
 
         if (result.length > 5) {
-            return createResultObject(false, ResultStatus.BadRequest); // TODO: fix 429
+            return createResultObject(false, ResultStatus.TooManyRequests);
         }
 
         return createResultObject(true, ResultStatus.Success);
@@ -63,7 +63,7 @@ class RateLimitRepo {
                                     $and: [
                                         { $eq: ['$$item.ip', ip] },
                                         {
-                                            $gte: [
+                                            $gt: [
                                                 '$$item.date',
                                                 new Date(Date.now() - 10 * 1000).toISOString()
                                             ]

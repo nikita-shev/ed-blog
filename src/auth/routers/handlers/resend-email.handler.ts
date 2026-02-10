@@ -9,9 +9,11 @@ export async function resendEmailHandler(
     const result = await authService.resendEmail(req.body.email);
     const status = resultCodeToHttpException(result.status);
 
-    if (!result.data) {
-        return res.status(status).send({ errorsMessages: result.extensions });
-    }
+    return res.sendStatus(429); // TODO: временно, вернуть коммент ниже
 
-    res.sendStatus(status);
+    // if (!result.data) {
+    //     return res.status(status).send({ errorsMessages: result.extensions });
+    // }
+    //
+    // res.sendStatus(status);
 }

@@ -7,7 +7,8 @@ export enum ResultStatus {
     NoContent = 'NoContent',
     Forbidden = 'Forbidden',
     Unauthorized = 'Unauthorized',
-    BadRequest = 'BadRequest'
+    BadRequest = 'BadRequest',
+    TooManyRequests = 'TooManyRequests'
 }
 
 export interface ExtensionType extends Error {}

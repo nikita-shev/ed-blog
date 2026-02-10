@@ -9,9 +9,11 @@ export async function confirmRegistrationHandler(
     const result = await authService.confirmRegistrationUser(req.body.code);
     const status = resultCodeToHttpException(result.status);
 
-    if (!result.data) {
-        return res.status(status).send({ errorsMessages: result.extensions });
-    }
+    return res.sendStatus(429); // TODO: временно, вернуть коммент ниже
 
-    res.sendStatus(status);
+    // if (!result.data) {
+    //     return res.status(status).send({ errorsMessages: result.extensions });
+    // }
+    //
+    // res.sendStatus(status);
 }

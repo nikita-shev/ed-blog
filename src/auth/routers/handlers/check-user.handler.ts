@@ -4,12 +4,13 @@ import { authService } from '../../application/auth.service';
 import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
 import { PATHS } from '../../../core/constants/paths';
 import { AuthInputDto, TokenOutputDto } from '../../dto/auth.dto';
+import { ServiceInfo } from '../../types/auth.types';
 
 export async function checkUserHandler(
     req: Request<{}, {}, AuthInputDto>,
     res: Response<TokenOutputDto>
 ) {
-    const serviceInfo = { device: req.get('User-agent') };
+    const serviceInfo: ServiceInfo = { device: req.get('User-agent'), ip: req.ip };
     const result = await authService.checkUser(req.body, serviceInfo);
     const status = resultCodeToHttpException(result.status);
 

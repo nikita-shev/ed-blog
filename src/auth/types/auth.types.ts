@@ -6,4 +6,5 @@ export interface CurrentUser extends BasicUser {
 
 export interface ServiceInfo {
     device?: string;
+    ip?: string
 }

@@ -26,39 +26,59 @@ export const authService = {
         credentials: AuthInputDto,
         serviceInfo?: ServiceInfo
     ): NullableResultObject<AuthorizationTokens> {
-        const result = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
+        const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
+        if (!userData) return createResultObject(null, ResultStatus.Unauthorized);
 
-        if (!result) {
-            return createResultObject(null, ResultStatus.Unauthorized);
-        }
+        const isUser = await bcrypt.compare(credentials.password, userData.password);
+        if (!isUser) return createResultObject(null, ResultStatus.Unauthorized);
 
-        const isUser = await bcrypt.compare(credentials.password, result.password);
+        // ======>
+        const userId = userData._id.toString();
+        const userDevice = serviceInfo?.device ?? '';
+        const userIp = serviceInfo?.ip ?? '';
 
-        if (isUser) {
-            const atPayload = { userId: result._id.toString() };
-            const rtPayload = {
-                userId: result._id.toString(),
-                deviceId: uuid()
-            };
-            const accessToken = jwtService.createToken(atPayload, { expiresIn: '10s' });
-            const refreshToken = jwtService.createToken(rtPayload, { expiresIn: '20s' });
+        const lastSession = await authRepository.findSessionByDevice(userId, userDevice, userIp);
 
-            const payload = jwtService.decode<RefreshTokenPayload>(refreshToken.data); // TODO: Fix "any"
-            const d = {
-                // TODO: fix types, names, move
-                device: serviceInfo?.device ?? '',
-                iat: new Date(payload.data.iat).toISOString(),
-                exp: new Date(payload.data.exp).toISOString()
-            };
-            await authRepository.addUserSession({ ...rtPayload, ...payload.data, ...d }); // TODO: делать проверку, что всё ок???
+        if (lastSession) {
+            const { deviceId } = lastSession;
+
+            const accessToken = jwtService.createToken({ userId }, { expiresIn: '10s' });
+            const refreshToken = jwtService.createToken({ userId, deviceId }, { expiresIn: '20s' });
+            const decodeResult = jwtService.decode<RefreshTokenPayload>(refreshToken.data);
+
+            await authRepository.replaceUserSession({
+                ...decodeResult.data,
+                iat: new Date(decodeResult.data.iat).toISOString(),
+                exp: new Date(decodeResult.data.exp).toISOString()
+            });
 
             return createResultObject({
                 accessToken: accessToken.data,
                 refreshToken: refreshToken.data
             });
-        } else {
-            return createResultObject(null, ResultStatus.Unauthorized);
         }
+
+        // ======>
+        const accessToken = jwtService.createToken({ userId }, { expiresIn: '10s' });
+        const refreshToken = jwtService.createToken(
+            { userId, deviceId: uuid() },
+            { expiresIn: '20s' }
+        );
+
+        const payload = jwtService.decode<RefreshTokenPayload>(refreshToken.data); // TODO: Fix "any"
+        const d = {
+            // TODO: fix types, names, move
+            device: userDevice,
+            ip: userIp,
+            iat: new Date(payload.data.iat).toISOString(),
+            exp: new Date(payload.data.exp).toISOString()
+        };
+        await authRepository.addUserSession({ ...payload.data, ...d }); // TODO: делать проверку, что всё ок???
+
+        return createResultObject({
+            accessToken: accessToken.data,
+            refreshToken: refreshToken.data
+        });
     },
 
     // TODO: Q: authBearerMiddleware проверил токен, но findUserById всегда будет возвращать null. Как быть?
@@ -149,11 +169,11 @@ export const authService = {
     // TODO: move sessions???
     async findSession(token: RefreshToken): Promise<ResultObject<boolean>> {
         const { data: payload } = jwtService.decode<UserSessionData>(token);
-        const isValidToken = await authRepository.findSession(payload);
+        const result = await authRepository.findSession(payload);
 
         return createResultObject(
-            isValidToken,
-            isValidToken ? ResultStatus.Success : ResultStatus.Unauthorized
+            Boolean(result),
+            Boolean(result) ? ResultStatus.Success : ResultStatus.Unauthorized
         );
     },
 
@@ -189,6 +209,7 @@ export const authService = {
     }
 };
 
+// TODO: Возможно дублируется логика в replaceRefreshToken() и checkUser() (блок lastSession)
 // TODO: Логика формирования jwt в методах replaceRefreshToken и checkUser дублируется. Исрпавить.
 
 // TODO: move

@@ -1,5 +1,5 @@
 import { sessionsCollection } from '../../db/db.config';
-import { UserSessionData } from '../types/sessions.types';
+import { SessionWithId, UserSessionData } from '../types/sessions.types';
 import { RefreshTokenPayload } from '../application/auth.service';
 
 // TODO: вынести работу с черным списком в отдельный сервис/репозиторий
@@ -10,14 +10,27 @@ export const authRepository = {
         return Boolean(result.insertedId);
     },
 
-    async findSession(data: UserSessionData): Promise<boolean> {
-        const result = await sessionsCollection.findOne({
+    // TODO: сделать сервис и заменить во всех местах
+    async findSessionByDevice(
+        userId: string,
+        device: string,
+        ip: string
+    ): Promise<SessionWithId | null> {
+        return await sessionsCollection.findOne({ userId, device, ip });
+    },
+
+    // TODO: сделать сервис и заменить во всех местах
+    async findSessionByDeviceId(userId: string, deviceId: string): Promise<SessionWithId | null> {
+        return await sessionsCollection.findOne({ userId, deviceId });
+    },
+
+    // TODO: rename -> findSessionByToken
+    async findSession(data: UserSessionData): Promise<SessionWithId | null> {
+        return await sessionsCollection.findOne({
             userId: data.userId,
             deviceId: data.deviceId,
             iat: new Date(data.iat).toISOString()
         });
-
-        return Boolean(result);
     },
 
     async replaceUserSession(data: RefreshTokenPayload): Promise<boolean> {

@@ -29,6 +29,7 @@ class RateLimitService {
     async getData(url: string, ip: string): Promise<ResultObject<boolean>> {
         const result = await this.repo.findRequests(url, ip);
 
+        // TODO: сделать отдельный логер(fn)
         // console.log('start');
         // result.forEach((el) => {
         //     console.log(new Date(el.date).toString());
@@ -71,7 +72,7 @@ class RateLimitRepo {
                                         {
                                             $gte: [
                                                 '$$item.date',
-                                                new Date(Date.now() - 10 * 1000).toISOString()
+                                                new Date(Date.now() - 13 * 1000).toISOString() // 13 -> 10
                                             ]
                                         }
                                     ]

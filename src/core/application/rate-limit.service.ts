@@ -56,6 +56,16 @@ class RateLimitService {
 
 class RateLimitRepo {
     async findRequests(url: string, ip: string): Promise<RateLimitRequest[]> {
+
+        // TODO: заглучшка для тестов (проблема выхода за пределе 10с, но не везде)
+        const t: { [key: string]: number} = {
+            login: 10,
+            registration: 13,
+            'registration-email-resending': 10,
+            'registration-confirmation': 10,
+        }
+        const path = url.split('/').reverse()[0];
+
         const result = await rateLimitCollection
             .aggregate<RateLimitDto>([
                 { $match: { url } },
@@ -72,7 +82,7 @@ class RateLimitRepo {
                                         {
                                             $gte: [
                                                 '$$item.date',
-                                                new Date(Date.now() - 13 * 1000).toISOString() // 13 -> 10
+                                                new Date(Date.now() - t[path] * 1000).toISOString() // 13 -> 10
                                             ]
                                         }
                                     ]

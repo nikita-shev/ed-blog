@@ -78,9 +78,10 @@ export const emailAdapter = {
 
             // 3. Отправляем письмо
             let info = await transporter.sendMail({
-                from: `blogs.com`,
+                from: `"Blogs Support" <${testAccount.user}>`, // sender address
                 to: email,
                 subject,
+                text: 'Please confirm your registration by following the link: https://somesite.com',
                 html: message
             });
 

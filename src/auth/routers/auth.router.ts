@@ -4,7 +4,8 @@ import { authInputDtoValidation } from '../middlewares/validation/input-dto-vali
 import { checkUserHandler } from './handlers/check-user.handler';
 import {
     authBearerMiddleware,
-    authRateLimitMiddleware
+    authRateLimitReedMiddleware,
+    authRateLimitWriteMiddleware
 } from '../../core/middlewares/auth.middleware';
 import { getInfoAboutUserHandler } from './handlers/get-info-about-user.handler';
 import { userInputDtoValidation } from '../../users/middlewares/validation/input-dto-validation';
@@ -22,22 +23,30 @@ authRouter
     .get('/me', authBearerMiddleware, getInfoAboutUserHandler)
     .post(
         '/login',
-        authRateLimitMiddleware,
+        authRateLimitReedMiddleware,
+        authRateLimitWriteMiddleware,
         authInputDtoValidation,
         inputValidationResultMiddleware,
         checkUserHandler
     )
     .post(
         '/registration',
-        authRateLimitMiddleware,
+        authRateLimitReedMiddleware,
+        authRateLimitWriteMiddleware,
         userInputDtoValidation,
         inputValidationResultMiddleware,
         registrationUserHandler
     ) // TODO: так можно (userInputDtoValidation в authRouter)?
-    .post('/registration-confirmation', authRateLimitMiddleware, confirmRegistrationHandler)
+    .post(
+        '/registration-confirmation',
+        authRateLimitReedMiddleware,
+        authRateLimitWriteMiddleware,
+        confirmRegistrationHandler
+    )
     .post(
         '/registration-email-resending',
-        authRateLimitMiddleware,
+        authRateLimitReedMiddleware,
+        authRateLimitWriteMiddleware,
         emailValidation,
         inputValidationResultMiddleware,
         resendEmailHandler

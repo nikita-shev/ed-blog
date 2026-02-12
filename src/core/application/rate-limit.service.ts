@@ -29,6 +29,12 @@ class RateLimitService {
     async getData(url: string, ip: string): Promise<ResultObject<boolean>> {
         const result = await this.repo.findRequests(url, ip);
 
+        // console.log('start');
+        // result.forEach((el) => {
+        //     console.log(new Date(el.date).toString());
+        // })
+        // console.log('end');
+
         if (!result.length) return createResultObject(true, ResultStatus.NotFound);
 
         if (result.length > 5) {

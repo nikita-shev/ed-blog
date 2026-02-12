@@ -53,19 +53,30 @@ export function authBearerMiddleware(req: Request, res: Response, next: NextFunc
     }
 }
 
-export async function authRateLimitMiddleware(req: Request, res: Response, next: NextFunction) {
+// =======================================>
+// TODO: fix, rename
+export async function authRateLimitWriteMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
     const data: RateLimitInputDto = {
         ip: req.ip ?? '',
         url: req.originalUrl,
         date: new Date().toISOString()
     };
 
-    const result = await rateLimitService.getData(data.url, data.ip);
+    await rateLimitService.saveData(data);
+    next();
+}
+
+// TODO: fix, rename
+export async function authRateLimitReedMiddleware(req: Request, res: Response, next: NextFunction) {
+    const result = await rateLimitService.getData(req.originalUrl, req.ip ?? '');
 
     if (!result.data) {
-        return res.sendStatus(429); // TODO: fix 429
+        return res.sendStatus(HttpStatus.TooManyRequests);
     } else {
-        await rateLimitService.saveData(data);
         next();
     }
 }

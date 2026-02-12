@@ -27,7 +27,7 @@ export const authService = {
         serviceInfo?: ServiceInfo
     ): NullableResultObject<AuthorizationTokens> {
         const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
-        if (!userData) return createResultObject(null, ResultStatus.TooManyRequests);
+        if (!userData) return createResultObject(null, ResultStatus.Unauthorized);
 
         const isUser = await bcrypt.compare(credentials.password, userData.password);
         if (!isUser) return createResultObject(null, ResultStatus.Unauthorized);

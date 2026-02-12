@@ -37,7 +37,7 @@ class RateLimitService {
 
         if (!result.length) return createResultObject(true, ResultStatus.NotFound);
 
-        if (result.length > 5) {
+        if (result.length >= 5) {
             return createResultObject(false, ResultStatus.TooManyRequests);
         }
 

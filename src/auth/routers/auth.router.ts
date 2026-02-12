@@ -25,8 +25,8 @@ authRouter
         '/login',
         authRateLimitReedMiddleware,
         authRateLimitWriteMiddleware,
-        authInputDtoValidation,
-        inputValidationResultMiddleware,
+        // authInputDtoValidation,
+        // inputValidationResultMiddleware,
         checkUserHandler
     )
     .post(

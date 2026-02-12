@@ -26,6 +26,8 @@ export const authService = {
         credentials: AuthInputDto,
         serviceInfo?: ServiceInfo
     ): NullableResultObject<AuthorizationTokens> {
+        console.log(credentials, serviceInfo);
+
         const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
         if (!userData) return createResultObject(null, ResultStatus.Unauthorized);
 

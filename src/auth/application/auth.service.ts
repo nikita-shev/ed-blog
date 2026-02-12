@@ -99,6 +99,8 @@ export const authService = {
     async registrationUser(
         credentials: RegistrationInputDto
     ): Promise<ResultObject<boolean> | ResultObject<null>> {
+        console.log(credentials);
+
         const result = await usersService.createUser(credentials);
 
         if (typeof result === 'object') {

@@ -2,13 +2,15 @@ import nodemailer from 'nodemailer';
 import { createResultObject } from '../core/result-object/utils/createResultObject';
 import { ResultObject, ResultStatus } from '../core/result-object/result-object.types';
 
+// sendEmail_Not_Work - первая версия на gmail(ban)
 export const emailAdapter = {
-    async sendEmail(
+    async sendEmail_Not_Work(
         email: string,
         subject: string,
         message: string
     ): Promise<ResultObject<boolean>> {
         try {
+            let accessToken;
             const transporter = nodemailer.createTransport({
                 // service: 'gmail',
                 host: 'smtp.gmail.com',
@@ -21,9 +23,21 @@ export const emailAdapter = {
                     clientSecret: process.env.CLIENT_SECRET,
                     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
                     accessToken: process.env.OAUTH_ACCESS_TOKEN
+                    // accessToken: accessToken || process.env.OAUTH_ACCESS_TOKEN
                 },
                 logger: true
             });
+
+            // transporter.set('oauth2_provision_cb', (user, renew, cb) => {
+            //     console.log(user);
+            //
+            //     // const token = userTokens[user];
+            //     // if (!token) return cb(new Error('Unknown user'));
+            //     // cb(null, token);
+            // });
+            // transporter.on('token', (t) => {
+            //     accessToken = t.accessToken;
+            // });
 
             // await transporter.verify(); // Проверка подключения
 
@@ -36,6 +50,47 @@ export const emailAdapter = {
 
             return createResultObject(true);
         } catch (e) {
+            // console.log(e);
+
+            return createResultObject(false, ResultStatus.BadRequest); // TODO: добавить текст ошибки
+        }
+    },
+
+    async sendEmail(
+        email: string,
+        subject: string,
+        message: string
+    ): Promise<ResultObject<boolean>> {
+        try {
+            // 1. Создаем тестовую учетку (автоматически)
+            let testAccount = await nodemailer.createTestAccount();
+
+            // 2. Настраиваем транспорт
+            let transporter = nodemailer.createTransport({
+                host: 'smtp.ethereal.email',
+                port: 587,
+                secure: false, // true для 465, false для других портов
+                auth: {
+                    user: testAccount.user, // сгенерированный логин
+                    pass: testAccount.pass // сгенерированный пароль
+                }
+            });
+
+            // 3. Отправляем письмо
+            let info = await transporter.sendMail({
+                from: `blogs.com`,
+                to: email,
+                subject,
+                html: message
+            });
+
+            console.log('Письмо отправлено!');
+            // 4. Ссылка на просмотр письма в браузере
+            console.log('Посмотреть здесь: %s', nodemailer.getTestMessageUrl(info));
+
+            return createResultObject(true);
+        } catch (e) {
+            console.log(e);
             return createResultObject(false, ResultStatus.BadRequest); // TODO: добавить текст ошибки
         }
     }

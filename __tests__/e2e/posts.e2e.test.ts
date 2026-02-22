@@ -1,32 +1,28 @@
 import request from 'supertest';
 import { PATHS } from '../../src/core/constants/paths';
 import { HttpStatus } from '../../src/core/constants/http-statuses';
-import { PostInputDto } from '../../src/posts/dto';
+import { PostInputDto, PostOutputDto } from '../../src/posts/dto';
 import { initTestApp } from '../common/initTestApp';
+import { authorizationData, incorrectId } from '../common/constants/mock-data';
+import {
+    incorrectField,
+    maxFieldLengthExceeded,
+    minFieldLengthExceeded,
+    mustBeString,
+    requiredField
+} from '../common/utils/errors';
+import { TestData } from '../common/utils/test-data';
 
 describe('Tests path "/posts"', () => {
     const { app, runDB, clearDb } = initTestApp();
+    const testData = new TestData(app);
 
     beforeAll(async () => {
         await runDB();
         await clearDb();
     });
 
-    it('test GET /posts', async () => {
-        const response = await request(app).get(`${PATHS.posts}`);
-
-        expect(response.status).toBe(HttpStatus.Success);
-        expect(response.body).toEqual({
-            items: [],
-            page: 1,
-            pageSize: 10,
-            pagesCount: 0,
-            totalCount: 0
-        });
-    });
-
-    let postId: string;
-    it('test POST /posts', async () => {
+    describe('POST /posts', () => {
         const newPost: PostInputDto = {
             title: 'Title',
             shortDescription: 'shortDescription',
@@ -34,179 +30,256 @@ describe('Tests path "/posts"', () => {
             blogId: '213'
         };
 
-        const response = await request(app).post(`${PATHS.posts}/`).send(newPost);
-        expect(response.status).toBe(HttpStatus.Unauthorized);
-
-        const response2 = await request(app)
-            .post(`${PATHS.posts}/`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-            .send(newPost);
-        postId = response2.body.id;
-        expect(response2.status).toBe(HttpStatus.Created);
-        expect(response2.body).toEqual({
-            id: expect.any(String),
-            blogName: 'Test',
-            createdAt: expect.any(String),
-            ...newPost
+        it('проверка отсутствия авторизации', async () => {
+            const response = await request(app).post(`${PATHS.posts}/`).send(newPost);
+            expect(response.status).toBe(HttpStatus.Unauthorized);
         });
 
-        const incorrectData = {
-            // title: '',
-            shortDescription: 123,
-            content: '                                                       ',
-            blogId: 222
-        };
-        const response3 = await request(app)
-            .post(`${PATHS.posts}/`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-            .send(incorrectData);
+        it('проверка входных данных', async () => {
+            const incorrectData = {
+                // title: '',
+                shortDescription: 123,
+                content: '                                                       ',
+                blogId: 222
+            };
 
-        expect(response3.status).toBe(HttpStatus.BadRequest);
-        expect(response3.body).toEqual({
-            errorsMessages: [
-                {
-                    field: 'title',
-                    message: 'Title is required'
-                },
-                {
-                    field: 'shortDescription',
-                    message: 'shortDescription must be a string'
-                },
-                {
-                    field: 'content',
-                    message: 'Min length is 1 characters'
-                },
-                {
-                    field: 'blogId',
-                    message: 'blogId must be a string'
-                }
-            ]
+            const response = await request(app)
+                .post(`${PATHS.posts}/`)
+                .set('Authorization', authorizationData)
+                .send(incorrectData);
+
+            expect(response.status).toBe(HttpStatus.BadRequest);
+            expect(response.body).toEqual({
+                errorsMessages: [
+                    requiredField('title'),
+                    mustBeString('shortDescription'),
+                    minFieldLengthExceeded('content'),
+                    mustBeString('blogId')
+                ]
+            });
+        });
+
+        it('создание поста', async () => {
+            const response = await request(app)
+                .post(`${PATHS.posts}/`)
+                .set('Authorization', authorizationData)
+                .send(newPost);
+
+            expect(response.status).toBe(HttpStatus.Created);
+            expect(response.body).toEqual({
+                id: expect.any(String),
+                blogName: 'Test',
+                createdAt: expect.any(String),
+                ...newPost
+            });
         });
     });
 
-    it('test GET /posts/:id', async () => {
-        const response = await request(app).get(`${PATHS.posts}/11e`);
-        expect(response.status).toBe(HttpStatus.BadRequest);
-        expect(response.body).toEqual({
-            errorsMessages: [
-                {
-                    field: 'id',
-                    message: 'id is incorrect'
-                }
-            ]
+    describe('GET /posts/:id', () => {
+        let post: PostOutputDto;
+
+        beforeAll(async () => {
+            await clearDb();
+
+            post = await testData.createPost();
         });
 
-        const testId = `1${postId.slice(1)}`;
-        const response2 = await request(app).get(`${PATHS.posts}/${testId}`);
-        expect(response2.status).toBe(HttpStatus.NotFound);
+        it('неверный формат id поста', async () => {
+            const response = await request(app).get(`${PATHS.posts}/${incorrectId}`);
 
-        const response3 = await request(app).get(`${PATHS.posts}/${postId}`);
-        expect(response3.status).toBe(HttpStatus.Success);
-        expect(response3.body.title).toBe('Title');
+            expect(response.status).toBe(HttpStatus.BadRequest);
+            expect(response.body).toEqual({
+                errorsMessages: [incorrectField('id')]
+            });
+        });
+
+        it('пост не найден', async () => {
+            const testId = `1${post.id.slice(1)}`;
+            const response = await request(app).get(`${PATHS.posts}/${testId}`);
+
+            expect(response.status).toBe(HttpStatus.NotFound);
+        });
+
+        it('пост найден', async () => {
+            const response = await request(app).get(`${PATHS.posts}/${post.id}`);
+
+            expect(response.status).toBe(HttpStatus.Success);
+            expect(response.body.title).toBe(post.title);
+        });
     });
 
-    it('test PUT /posts/:id', async () => {
+    describe('PUT /posts/:id', () => {
         const newData: PostInputDto = {
             title: 'Title2',
             shortDescription: 'shortDescription2',
             content: 'content2',
             blogId: '213'
         };
+        let post: PostOutputDto;
 
-        const response = await request(app).put(`${PATHS.posts}/${postId}`).send(newData);
-        expect(response.status).toBe(HttpStatus.Unauthorized);
+        beforeAll(async () => {
+            await clearDb();
 
-        const response2 = await request(app)
-            .put(`${PATHS.posts}/11ee`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-            .send(newData);
-        expect(response2.status).toBe(HttpStatus.BadRequest);
-        expect(response2.body).toEqual({
-            errorsMessages: [
-                {
-                    field: 'id',
-                    message: 'id is incorrect'
-                }
-            ]
+            post = await testData.createPost();
         });
 
-        const testId = `1${postId.slice(1)}`;
-        const response3 = await request(app)
-            .put(`${PATHS.posts}/${testId}`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-            .send(newData);
-        expect(response3.status).toBe(HttpStatus.NotFound);
+        it('проверка авторизации', async () => {
+            const response = await request(app).put(`${PATHS.posts}/${post.id}`).send(newData);
 
-        const response4 = await request(app)
-            .put(`${PATHS.posts}/${postId}`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-            .send(newData);
-        expect(response4.status).toBe(HttpStatus.NoContent);
+            expect(response.status).toBe(HttpStatus.Unauthorized);
+        });
 
-        const content = (() => [...new Array(1001).fill('i')].join(' '))();
-        const incorrectData = {
-            title: 123,
-            // shortDescription: 123,
-            content
-            // blogId: 222
-        };
-        const response5 = await request(app)
-            .put(`${PATHS.posts}/${postId}`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-            .send(incorrectData);
+        it('проверка формата id поста', async () => {
+            const response = await request(app)
+                .put(`${PATHS.posts}/${incorrectId}`)
+                .set('Authorization', authorizationData)
+                .send(newData);
 
-        expect(response5.status).toBe(HttpStatus.BadRequest);
-        expect(response5.body).toEqual({
-            errorsMessages: [
-                {
-                    field: 'title',
-                    message: 'Title must be a string'
-                },
-                {
-                    field: 'shortDescription',
-                    message: 'ShortDescription is required'
-                },
-                {
-                    field: 'content',
-                    message: 'Max length is 1000 characters'
-                },
-                {
-                    field: 'blogId',
-                    message: 'blogId is required'
-                }
-            ]
+            expect(response.status).toBe(HttpStatus.BadRequest);
+            expect(response.body).toEqual({
+                errorsMessages: [incorrectField('id')]
+            });
+        });
+
+        it('пост не найден', async () => {
+            const testId = `1${post.id.slice(1)}`;
+            const response = await request(app)
+                .put(`${PATHS.posts}/${testId}`)
+                .set('Authorization', authorizationData)
+                .send(newData);
+
+            expect(response.status).toBe(HttpStatus.NotFound);
+        });
+
+        it('проверка входящих данных', async () => {
+            const content = (() => [...new Array(1001).fill('i')].join(' '))();
+            const incorrectData = {
+                title: 123,
+                // shortDescription: 123,
+                content
+                // blogId: 222
+            };
+            const response = await request(app)
+                .put(`${PATHS.posts}/${post.id}`)
+                .set('Authorization', authorizationData)
+                .send(incorrectData);
+
+            expect(response.status).toBe(HttpStatus.BadRequest);
+            expect(response.body).toEqual({
+                errorsMessages: [
+                    mustBeString('title'),
+                    requiredField('shortDescription'),
+                    maxFieldLengthExceeded('content', 1000),
+                    requiredField('blogId')
+                ]
+            });
+        });
+
+        it('пост обновлен', async () => {
+            const response = await request(app)
+                .put(`${PATHS.posts}/${post.id}`)
+                .set('Authorization', authorizationData)
+                .send(newData);
+
+            expect(response.status).toBe(HttpStatus.NoContent);
         });
     });
 
-    it('test DELETE /posts/:id', async () => {
-        const response = await request(app).delete(`${PATHS.posts}/${postId}`);
-        expect(response.status).toBe(HttpStatus.Unauthorized);
+    describe('DELETE /posts/:id', () => {
+        let post: PostOutputDto;
 
-        const response2 = await request(app)
-            .delete(`${PATHS.posts}/112ee`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
-        expect(response2.status).toBe(HttpStatus.BadRequest);
-        expect(response2.body).toEqual({
-            errorsMessages: [
-                {
-                    field: 'id',
-                    message: 'id is incorrect'
-                }
-            ]
+        beforeAll(async () => {
+            await clearDb();
+
+            post = await testData.createPost();
         });
 
-        const testId = `1${postId.slice(1)}`;
-        const response3 = await request(app)
-            .delete(`${PATHS.posts}/${testId}`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
-        expect(response3.status).toBe(HttpStatus.NotFound);
+        it('проверка авторизации', async () => {
+            const response = await request(app).delete(`${PATHS.posts}/${post.id}`);
 
-        const response4 = await request(app)
-            .delete(`${PATHS.posts}/${postId}`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
-        expect(response4.status).toBe(HttpStatus.NoContent);
+            expect(response.status).toBe(HttpStatus.Unauthorized);
+        });
 
-        const responseGet = await request(app).get(`${PATHS.posts}/${postId}`);
-        expect(responseGet.status).toBe(HttpStatus.NotFound);
+        it('проверка формата id поста', async () => {
+            const response = await request(app)
+                .delete(`${PATHS.posts}/${incorrectId}`)
+                .set('Authorization', authorizationData);
+
+            expect(response.status).toBe(HttpStatus.BadRequest);
+            expect(response.body).toEqual({
+                errorsMessages: [incorrectField('id')]
+            });
+        });
+
+        it('пост не найден', async () => {
+            const testId = `1${post.id.slice(1)}`;
+            const response3 = await request(app)
+                .delete(`${PATHS.posts}/${testId}`)
+                .set('Authorization', authorizationData);
+
+            expect(response3.status).toBe(HttpStatus.NotFound);
+        });
+
+        it('пост удален', async () => {
+            const response = await request(app)
+                .delete(`${PATHS.posts}/${post.id}`)
+                .set('Authorization', authorizationData);
+
+            expect(response.status).toBe(HttpStatus.NoContent);
+        });
+
+        it('проверка удалился ли пост', async () => {
+            const response = await request(app).get(`${PATHS.posts}/${post.id}`);
+
+            expect(response.status).toBe(HttpStatus.NotFound);
+        });
     });
+
+    describe('GET /posts', () => {
+        let posts: PostOutputDto[] = [];
+
+        beforeAll(async () => {
+            await clearDb();
+
+            const blogs = await testData.createBlogs([1]);
+            const blogId = blogs[0].id;
+
+            posts = await testData.createPosts(blogId, [1, 2, 3, 4, 5]);
+        });
+
+        it('поиск постов без пагинации', async () => {
+            const response = await request(app).get(`${PATHS.posts}`);
+
+            expect(response.status).toBe(HttpStatus.Success);
+            expect(response.body).toEqual({
+                items: [...posts].reverse(),
+                page: 1,
+                pageSize: 10,
+                pagesCount: Math.ceil(posts.length / 10),
+                totalCount: posts.length
+            });
+        });
+
+        it('поиск постов с пагинацией', async () => {
+            const query = { pageSize: 3, pageNumber: 2 };
+            const response = await request(app).get(`${PATHS.posts}`).query(query);
+
+            expect(response.status).toBe(HttpStatus.Success);
+            expect(response.body).toEqual({
+                items: [...posts].reverse().slice(-2),
+                page: query.pageNumber,
+                pageSize: query.pageSize,
+                pagesCount: Math.ceil(posts.length / query.pageSize),
+                totalCount: posts.length
+            });
+        });
+    });
+
+    // describe('POST /posts/:postId/comments', () => {
+    //
+    // })
+
+    // describe('GET /posts/:postId/comments', () => {
+    //
+    // })
 });

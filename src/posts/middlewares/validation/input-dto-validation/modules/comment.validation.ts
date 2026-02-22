@@ -7,9 +7,9 @@ const SETTINGS = {
 
 export const commentValidation = body('content')
     .exists()
-    .withMessage('Content is required')
+    .withMessage('content is required')
     .isString()
-    .withMessage('Content must be a string')
+    .withMessage('content must be a string')
     .trim()
     .isLength({ min: SETTINGS.minLength })
     .withMessage(`Min length is ${SETTINGS.minLength} characters`)

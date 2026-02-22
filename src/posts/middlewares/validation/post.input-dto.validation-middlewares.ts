@@ -5,9 +5,9 @@ const { title, shortDescription, content } = SETTINGS;
 
 const titleValidation = body('title')
     .exists()
-    .withMessage('Title is required')
+    .withMessage('title is required')
     .isString()
-    .withMessage('Title must be a string')
+    .withMessage('title must be a string')
     .trim()
     .isLength({ min: title.minLength })
     .withMessage(`Min length is ${title.minLength} characters`)

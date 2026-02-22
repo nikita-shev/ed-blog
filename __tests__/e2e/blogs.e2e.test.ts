@@ -74,6 +74,7 @@ describe('Tests path "/blogs"', () => {
     describe('GET /blogs', () => {
         beforeAll(async () => {
             await clearDb();
+
             blogs = await testData.createBlogs([1, 2, 3, 4, 5]);
         });
 

@@ -3,7 +3,7 @@ import request from 'supertest';
 import { authorizationData } from '../constants/mock-data';
 import { PATHS } from '../../../src/core/constants/paths';
 import { BlogInputDto, BlogOutputDto } from '../../../src/blogs/dto';
-import { PostInputWithoutBlogIdDto } from '../../../src/posts/dto/post.input-dto';
+import { PostInputDto, PostInputWithoutBlogIdDto } from '../../../src/posts/dto/post.input-dto';
 import { PostOutputDto } from '../../../src/posts/dto';
 
 export class TestData {
@@ -34,6 +34,22 @@ export class TestData {
         }
 
         return this.blogs;
+    }
+
+    async createPost(): Promise<PostOutputDto> {
+        const newPost: PostInputDto = {
+            title: 'Title',
+            shortDescription: 'shortDescription',
+            content: 'content',
+            blogId: '213'
+        };
+
+        const response = await request(this.app)
+            .post(`${PATHS.posts}/`)
+            .set('Authorization', authorizationData)
+            .send(newPost);
+
+        return response.body;
     }
 
     async createPosts(blogId: string, mockData: number[]): Promise<PostOutputDto[]> {

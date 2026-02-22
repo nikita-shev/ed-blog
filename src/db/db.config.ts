@@ -18,6 +18,8 @@ export let userCollection: Collection<User>;
 export let commentCollection: Collection<Comment>;
 export let sessionsCollection: Collection<Session>;
 export let rateLimitCollection: Collection<RateLimitDto>;
+// TODO: rename collections: blogCollection => BlogCollection or BlogModelClass
+
 
 export async function runDB(dbUrl = mongoURL) {
     if (!dbUrl) {

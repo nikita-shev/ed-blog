@@ -82,7 +82,7 @@ class RateLimitRepo {
                                         {
                                             $gt: [
                                                 '$$item.date',
-                                                new Date(Date.now() - 10 * 1000).toISOString() // t[path] -> 10
+                                                new Date(Date.now() - t[path] * 1000).toISOString() // t[path] -> 10
                                             ]
                                         }
                                     ]

@@ -1,22 +1,19 @@
-import express from 'express';
 import request from 'supertest';
-import { setupApp } from '../src/setup-app';
-import { PATHS } from '../src/core/constants/paths';
-import { HttpStatus } from '../src/core/constants/http-statuses';
-import { BlogInputDto } from '../src/blogs/dto';
-import { runDB } from '../src/db/db.config';
+import { PATHS } from '../../src/core/constants/paths';
+import { HttpStatus } from '../../src/core/constants/http-statuses';
+import { PostInputDto } from '../../src/posts/dto';
+import { initTestApp } from '../common/initTestApp';
 
-describe('Tests path "/blogs"', () => {
-    const app = express();
-    setupApp(app);
+describe('Tests path "/posts"', () => {
+    const { app, runDB, clearDb } = initTestApp();
 
     beforeAll(async () => {
         await runDB();
-        await request(app).delete(`${PATHS.testing}/all-data`).expect(HttpStatus.NoContent);
+        await clearDb();
     });
 
-    it('test GET /blogs', async () => {
-        const response = await request(app).get(`${PATHS.blogs}`);
+    it('test GET /posts', async () => {
+        const response = await request(app).get(`${PATHS.posts}`);
 
         expect(response.status).toBe(HttpStatus.Success);
         expect(response.body).toEqual({
@@ -28,37 +25,39 @@ describe('Tests path "/blogs"', () => {
         });
     });
 
-    let blogId: string;
-    it('test POST /blogs', async () => {
-        const newBlog: BlogInputDto = {
-            name: 'Cup',
-            description: 'cup',
-            websiteUrl: 'https://www.cup.com'
+    let postId: string;
+    it('test POST /posts', async () => {
+        const newPost: PostInputDto = {
+            title: 'Title',
+            shortDescription: 'shortDescription',
+            content: 'content',
+            blogId: '213'
         };
 
-        const response = await request(app).post(`${PATHS.blogs}/`).send(newBlog);
+        const response = await request(app).post(`${PATHS.posts}/`).send(newPost);
         expect(response.status).toBe(HttpStatus.Unauthorized);
 
         const response2 = await request(app)
-            .post(`${PATHS.blogs}/`)
+            .post(`${PATHS.posts}/`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-            .send(newBlog);
-        blogId = response2.body.id;
+            .send(newPost);
+        postId = response2.body.id;
         expect(response2.status).toBe(HttpStatus.Created);
         expect(response2.body).toEqual({
             id: expect.any(String),
-            isMembership: expect.any(Boolean),
+            blogName: 'Test',
             createdAt: expect.any(String),
-            ...newBlog
+            ...newPost
         });
 
         const incorrectData = {
-            name: 'CupCupCupCupCupCupCupCupCupCupCupCupCupCup',
-            // description: 123,
-            websiteUrl: 'htt://cupm'
+            // title: '',
+            shortDescription: 123,
+            content: '                                                       ',
+            blogId: 222
         };
         const response3 = await request(app)
-            .post(`${PATHS.blogs}/`)
+            .post(`${PATHS.posts}/`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(incorrectData);
 
@@ -66,23 +65,27 @@ describe('Tests path "/blogs"', () => {
         expect(response3.body).toEqual({
             errorsMessages: [
                 {
-                    field: 'websiteUrl',
-                    message: 'websiteUrl is incorrect'
+                    field: 'title',
+                    message: 'Title is required'
                 },
                 {
-                    field: 'name',
-                    message: 'Max length is 15 characters'
+                    field: 'shortDescription',
+                    message: 'shortDescription must be a string'
                 },
                 {
-                    field: 'description',
-                    message: 'Description is required'
+                    field: 'content',
+                    message: 'Min length is 1 characters'
+                },
+                {
+                    field: 'blogId',
+                    message: 'blogId must be a string'
                 }
             ]
         });
     });
 
-    it('test GET /blogs/:id', async () => {
-        const response = await request(app).get(`${PATHS.blogs}/11e`);
+    it('test GET /posts/:id', async () => {
+        const response = await request(app).get(`${PATHS.posts}/11e`);
         expect(response.status).toBe(HttpStatus.BadRequest);
         expect(response.body).toEqual({
             errorsMessages: [
@@ -93,27 +96,28 @@ describe('Tests path "/blogs"', () => {
             ]
         });
 
-        const testId = `1${blogId.slice(1)}`;
-        const response2 = await request(app).get(`${PATHS.blogs}/${testId}`);
+        const testId = `1${postId.slice(1)}`;
+        const response2 = await request(app).get(`${PATHS.posts}/${testId}`);
         expect(response2.status).toBe(HttpStatus.NotFound);
 
-        const response3 = await request(app).get(`${PATHS.blogs}/${blogId}`);
+        const response3 = await request(app).get(`${PATHS.posts}/${postId}`);
         expect(response3.status).toBe(HttpStatus.Success);
-        expect(response3.body.name).toBe('Cup');
+        expect(response3.body.title).toBe('Title');
     });
 
-    it('test PUT /blogs/:id', async () => {
-        const newData: BlogInputDto = {
-            name: 'Cup2',
-            description: 'cup2',
-            websiteUrl: 'https://www.cup2.com'
+    it('test PUT /posts/:id', async () => {
+        const newData: PostInputDto = {
+            title: 'Title2',
+            shortDescription: 'shortDescription2',
+            content: 'content2',
+            blogId: '213'
         };
 
-        const response = await request(app).put(`${PATHS.blogs}/${blogId}`).send(newData);
+        const response = await request(app).put(`${PATHS.posts}/${postId}`).send(newData);
         expect(response.status).toBe(HttpStatus.Unauthorized);
 
         const response2 = await request(app)
-            .put(`${PATHS.blogs}/11ee`)
+            .put(`${PATHS.posts}/11ee`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(newData);
         expect(response2.status).toBe(HttpStatus.BadRequest);
@@ -126,53 +130,60 @@ describe('Tests path "/blogs"', () => {
             ]
         });
 
-        const testId = `1${blogId.slice(1)}`;
+        const testId = `1${postId.slice(1)}`;
         const response3 = await request(app)
-            .put(`${PATHS.blogs}/${testId}`)
+            .put(`${PATHS.posts}/${testId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(newData);
         expect(response3.status).toBe(HttpStatus.NotFound);
 
         const response4 = await request(app)
-            .put(`${PATHS.blogs}/${blogId}`)
+            .put(`${PATHS.posts}/${postId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(newData);
         expect(response4.status).toBe(HttpStatus.NoContent);
 
+        const content = (() => [...new Array(1001).fill('i')].join(' '))();
         const incorrectData = {
-            name: 'CupCupCupCupCupCupCupCupCupCupCupCupCupCup2',
-            // description: 123,
-            websiteUrl: 'htt://cup2m'
+            title: 123,
+            // shortDescription: 123,
+            content
+            // blogId: 222
         };
         const response5 = await request(app)
-            .put(`${PATHS.blogs}/${blogId}`)
+            .put(`${PATHS.posts}/${postId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(incorrectData);
+
         expect(response5.status).toBe(HttpStatus.BadRequest);
         expect(response5.body).toEqual({
             errorsMessages: [
                 {
-                    field: 'websiteUrl',
-                    message: 'websiteUrl is incorrect'
+                    field: 'title',
+                    message: 'Title must be a string'
                 },
                 {
-                    field: 'name',
-                    message: 'Max length is 15 characters'
+                    field: 'shortDescription',
+                    message: 'ShortDescription is required'
                 },
                 {
-                    field: 'description',
-                    message: 'Description is required'
+                    field: 'content',
+                    message: 'Max length is 1000 characters'
+                },
+                {
+                    field: 'blogId',
+                    message: 'blogId is required'
                 }
             ]
         });
     });
 
-    it('test DELETE /blogs/:id', async () => {
-        const response = await request(app).delete(`${PATHS.blogs}/${blogId}`);
+    it('test DELETE /posts/:id', async () => {
+        const response = await request(app).delete(`${PATHS.posts}/${postId}`);
         expect(response.status).toBe(HttpStatus.Unauthorized);
 
         const response2 = await request(app)
-            .delete(`${PATHS.blogs}/112ee`)
+            .delete(`${PATHS.posts}/112ee`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
         expect(response2.status).toBe(HttpStatus.BadRequest);
         expect(response2.body).toEqual({
@@ -184,18 +195,18 @@ describe('Tests path "/blogs"', () => {
             ]
         });
 
-        const testId = `1${blogId.slice(1)}`;
+        const testId = `1${postId.slice(1)}`;
         const response3 = await request(app)
-            .delete(`${PATHS.blogs}/${testId}`)
+            .delete(`${PATHS.posts}/${testId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
         expect(response3.status).toBe(HttpStatus.NotFound);
 
         const response4 = await request(app)
-            .delete(`${PATHS.blogs}/${blogId}`)
+            .delete(`${PATHS.posts}/${postId}`)
             .set('Authorization', 'Basic YWRtaW46cXdlcnR5');
         expect(response4.status).toBe(HttpStatus.NoContent);
 
-        const responseGet = await request(app).get(`${PATHS.blogs}/${blogId}`);
+        const responseGet = await request(app).get(`${PATHS.posts}/${postId}`);
         expect(responseGet.status).toBe(HttpStatus.NotFound);
     });
 });

@@ -4,8 +4,8 @@ import { usersRepository } from '../repositories/users.repository';
 import { Error } from '../../core/types/error.types';
 import { User, UserWithoutPassword } from '../types/users.types';
 import { add, isPast, parseISO } from 'date-fns';
-import { createResultObject } from '../../core/result-object/utils/createResultObject';
-import { ResultObject, ResultStatus } from '../../core/result-object/result-object.types';
+import { badRequestResult, notFoundResult, successResult } from '../../core/utils/result-object';
+import { ServiceDto } from '../../core/utils/result-object/types/result-object.types';
 import { convertFullUserInfo } from '../routers/mappers/mapToUserOutput';
 
 export const usersService = {
@@ -35,26 +35,32 @@ export const usersService = {
         return await usersRepository.createUser(newUser);
     },
 
-    async getUserInfo(
-        userId: string
-    ): Promise<ResultObject<UserWithoutPassword> | ResultObject<null>> {
+    async getUserInfo(userId: string): Promise<ServiceDto<UserWithoutPassword> | ServiceDto<null>> {
         const result = await usersRepository.findUserById(userId);
 
-        if (!result) return createResultObject(null, ResultStatus.NotFound);
-        return createResultObject(convertFullUserInfo(result));
+        // if (!result) return createResultObject(null, ResultStatus.NotFound);
+        if (!result) return notFoundResult.create();
+        // return createResultObject(convertFullUserInfo(result));
+        return successResult.create(convertFullUserInfo(result));
     },
 
-    async confirmUser(code: string): Promise<ResultObject<boolean> | ResultObject<null>> {
+    async confirmUser(code: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
         const userInfo = await usersRepository.findUserByConfirmationCode(code);
         if (!userInfo)
-            return createResultObject(userInfo, ResultStatus.BadRequest, 'Bad Request', [
+            // return createResultObject(userInfo, ResultStatus.BadRequest, 'Bad Request', [
+            //     { field: 'code', message: 'Code is invalid' }
+            // ]);
+            return badRequestResult.create(userInfo, 'Bad Request', [
                 { field: 'code', message: 'Code is invalid' }
             ]);
 
         const { emailConfirmation } = userInfo;
         const hasExpired = isPast(parseISO(emailConfirmation.expirationDate));
         if (emailConfirmation.isConfirmed || hasExpired) {
-            return createResultObject(null, ResultStatus.BadRequest, 'Bad Request', [
+            // return createResultObject(null, ResultStatus.BadRequest, 'Bad Request', [
+            //     { field: 'code', message: 'Code is invalid' }
+            // ]);
+            return badRequestResult.create(null, 'Bad Request', [
                 { field: 'code', message: 'Code is invalid' }
             ]);
         }

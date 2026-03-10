@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { securityDevicesService } from '../../application/security-devices.service';
-import { resultCodeToHttpException } from '../../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../../core/utils/result-object/utils/resultCodeToHttpException';
 import { DevicesOutputDto } from '../../dto/devices.dto';
 
 export async function getDevicesHandler(req: Request, res: Response<DevicesOutputDto[]>) {

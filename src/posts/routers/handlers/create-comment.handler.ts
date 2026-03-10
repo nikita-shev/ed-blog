@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { postsService } from '../../application/posts.service';
 import { authService } from '../../../auth/application/auth.service';
-import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 import { CommentInputDto } from '../../dto/post.dto';
 import { CommentatorInfo } from '../../../routes/comments/types/comments.types';
 import { CommentOutputDto } from '../../../routes/comments/dto/comment.dto';

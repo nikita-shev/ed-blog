@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { add } from 'date-fns';
 import { authService } from '../../application/auth.service';
-import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 import { PATHS } from '../../../core/constants/paths';
 import { AuthInputDto, TokenOutputDto } from '../../dto/auth.dto';
 import { ServiceInfo } from '../../types/auth.types';

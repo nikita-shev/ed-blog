@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthOutputDto } from '../../dto/auth.dto';
 import { authService } from '../../application/auth.service';
-import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 
 export async function getInfoAboutUserHandler(req: Request, res: Response<AuthOutputDto>) {
     const result = await authService.getInfoAboutUser(req.appContext?.userId as string);

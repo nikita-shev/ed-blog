@@ -2,7 +2,12 @@ import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { jwtService } from '../../core/application/jwt.service';
-import { createResultObject } from '../../core/result-object/utils/createResultObject';
+import {
+    badRequestResult,
+    noContentResult,
+    successResult,
+    unauthorizedResult
+} from '../../core/utils/result-object';
 import {
     AuthInputDto,
     AuthorizationTokens,
@@ -10,10 +15,9 @@ import {
     RegistrationInputDto
 } from '../dto/auth.dto';
 import {
-    NullableResultObject,
-    ResultObject,
-    ResultStatus
-} from '../../core/result-object/result-object.types';
+    NullableServiceDto,
+    ServiceDto
+} from '../../core/utils/result-object/types/result-object.types';
 import { CurrentUser, ServiceInfo } from '../types/auth.types';
 import { usersService } from '../../users/application/users.service';
 import { createMessage, emailAdapter } from '../../adapters/email-adapter';
@@ -25,14 +29,16 @@ export const authService = {
     async checkUser(
         credentials: AuthInputDto,
         serviceInfo?: ServiceInfo
-    ): NullableResultObject<AuthorizationTokens> {
+    ): NullableServiceDto<AuthorizationTokens> {
         console.log(credentials, serviceInfo);
 
         const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
-        if (!userData) return createResultObject(null, ResultStatus.Unauthorized);
+        // if (!userData) return createResultObject(null, ResultStatus.Unauthorized);
+        if (!userData) return unauthorizedResult.create();
 
         const isUser = await bcrypt.compare(credentials.password, userData.password);
-        if (!isUser) return createResultObject(null, ResultStatus.Unauthorized);
+        // if (!isUser) return createResultObject(null, ResultStatus.Unauthorized);
+        if (!isUser) return unauthorizedResult.create();
 
         // ======>
         const userId = userData._id.toString();
@@ -54,7 +60,11 @@ export const authService = {
                 exp: new Date(decodeResult.data.exp).toISOString()
             });
 
-            return createResultObject({
+            // return createResultObject({
+            //     accessToken: accessToken.data,
+            //     refreshToken: refreshToken.data
+            // });
+            return successResult.create({
                 accessToken: accessToken.data,
                 refreshToken: refreshToken.data
             });
@@ -77,34 +87,39 @@ export const authService = {
         };
         await authRepository.addUserSession({ ...payload.data, ...d }); // TODO: делать проверку, что всё ок???
 
-        return createResultObject({
+        // return createResultObject({
+        //     accessToken: accessToken.data,
+        //     refreshToken: refreshToken.data
+        // });
+        return successResult.create({
             accessToken: accessToken.data,
             refreshToken: refreshToken.data
         });
     },
 
     // TODO: Q: authBearerMiddleware проверил токен, но findUserById всегда будет возвращать null. Как быть?
-    async getInfoAboutUser(userId: string): NullableResultObject<CurrentUser> {
+    async getInfoAboutUser(userId: string): NullableServiceDto<CurrentUser> {
         const result = await usersRepository.findUserById(userId);
 
         if (!result) {
-            return createResultObject(null, ResultStatus.Unauthorized);
+            // return createResultObject(null, ResultStatus.Unauthorized);
+            return unauthorizedResult.create();
         }
 
         const user: CurrentUser = { email: result.email, login: result.login, userId };
 
-        return createResultObject(user);
+        // return createResultObject(user);
+        return successResult.create(user);
     },
 
     async registrationUser(
         credentials: RegistrationInputDto
-    ): Promise<ResultObject<boolean> | ResultObject<null>> {
-        console.log(credentials);
-
+    ): Promise<ServiceDto<boolean> | ServiceDto<null>> {
         const result = await usersService.createUser(credentials);
 
         if (typeof result === 'object') {
-            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [result]);
+            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [result]);
+            return badRequestResult.create(null, 'Bad request', [result]);
         }
 
         // send email
@@ -119,30 +134,41 @@ export const authService = {
 
         if (!emailSendingStatus.data) {
             await usersService.deleteUser(result);
-            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            //     { field: 'login', message: 'Problems registering. Please try again later.' }
+            // ]);
+            return badRequestResult.create(null, 'Bad request', [
                 { field: 'login', message: 'Problems registering. Please try again later.' }
             ]);
         }
 
-        return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
+        // return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
+        return noContentResult.create(emailSendingStatus.data);
     },
 
-    async confirmRegistrationUser(
-        code: string
-    ): Promise<ResultObject<boolean> | ResultObject<null>> {
+    async confirmRegistrationUser(code: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
         return usersService.confirmUser(code);
     },
 
-    async resendEmail(email: string): Promise<ResultObject<boolean> | ResultObject<null>> {
+    async resendEmail(email: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
         const user = await usersRepository.findUser(email);
         if (!user)
-            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
-                { field: 'email', message: 'email not found' }
+            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            //     { field: 'email', message: 'email not found' } // TODO: дубликат
+            // ]);
+            return badRequestResult.create(null, 'Bad request', [
+                { field: 'email', message: 'email not found' } // TODO: дубликат
             ]);
 
         const { emailConfirmation } = user;
         if (emailConfirmation.isConfirmed) {
-            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            //     {
+            //         field: 'email',
+            //         message: 'email verified'
+            //     }
+            // ]);
+            return badRequestResult.create(null, 'Bad request', [
                 {
                     field: 'email',
                     message: 'email verified'
@@ -159,7 +185,14 @@ export const authService = {
             createMessage(newCode)
         );
         if (!emailSendingStatus.data) {
-            return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            // TODO: как такое тестировать, когда есть мока?
+            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
+            //     {
+            //         field: 'resend',
+            //         message: 'Problems with email confirmation. Please try again later.'
+            //     }
+            // ]);
+            return badRequestResult.create(null, 'Bad request', [
                 {
                     field: 'resend',
                     message: 'Problems with email confirmation. Please try again later.'
@@ -167,31 +200,36 @@ export const authService = {
             ]);
         }
 
-        return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
+        // return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
+        return noContentResult.create(emailSendingStatus.data);
     },
 
     // TODO: move sessions???
-    async findSession(token: RefreshToken): Promise<ResultObject<boolean>> {
+    async findSession(token: RefreshToken): Promise<ServiceDto<boolean>> {
         const { data: payload } = jwtService.decode<UserSessionData>(token);
         const result = await authRepository.findSession(payload);
 
-        return createResultObject(
-            Boolean(result),
-            Boolean(result) ? ResultStatus.Success : ResultStatus.Unauthorized
-        );
+        // return createResultObject(
+        //     Boolean(result),
+        //     Boolean(result) ? ResultStatus.Success : ResultStatus.Unauthorized
+        // );
+        return Boolean(result)
+            ? successResult.create(Boolean(result))
+            : unauthorizedResult.create(Boolean(result));
     },
 
-    async deleteSession(token: RefreshToken): Promise<ResultObject<boolean>> {
+    async deleteSession(token: RefreshToken): Promise<ServiceDto<boolean>> {
         const { data } = jwtService.decode<RefreshTokenPayload>(token);
         const result = await authRepository.deleteSession(data.deviceId);
 
-        return createResultObject(result, ResultStatus.NoContent);
+        // return createResultObject(result, ResultStatus.NoContent);
+        return noContentResult.create(result);
     },
 
     async replaceRefreshToken(
         userId: string, // TODO: нужен?
         token: RefreshToken
-    ): NullableResultObject<AuthorizationTokens> {
+    ): NullableServiceDto<AuthorizationTokens> {
         const { data } = jwtService.decode<RefreshTokenPayload>(token);
         const accessToken = jwtService.createToken({ userId: data.userId }, { expiresIn: '10s' });
         const refreshToken = jwtService.createToken(
@@ -206,7 +244,11 @@ export const authService = {
             exp: new Date(result.data.exp).toISOString()
         });
 
-        return createResultObject({
+        // return createResultObject({
+        //     accessToken: accessToken.data,
+        //     refreshToken: refreshToken.data
+        // });
+        return successResult.create({
             accessToken: accessToken.data,
             refreshToken: refreshToken.data
         });

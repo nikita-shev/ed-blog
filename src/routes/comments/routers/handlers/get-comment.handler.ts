@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { commentsService } from '../../application/comments.service';
-import { resultCodeToHttpException } from '../../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../../core/utils/result-object/utils/resultCodeToHttpException';
 import { CommentOutputDto } from '../../dto/comment.dto';
 
 export async function getCommentHandler(

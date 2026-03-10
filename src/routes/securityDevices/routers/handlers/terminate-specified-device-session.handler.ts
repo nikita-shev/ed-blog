@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { securityDevicesService } from '../../application/security-devices.service';
-import { resultCodeToHttpException } from '../../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../../core/utils/result-object/utils/resultCodeToHttpException';
 
 // TODO: rename
 export async function terminateSpecifiedDeviceSessionHandler(

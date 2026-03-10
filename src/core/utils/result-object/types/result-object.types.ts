@@ -1,5 +1,6 @@
-import { Error } from '../types/error.types';
+import { Error } from '../../../types/error.types';
 
+// rename ResultStatus
 export enum ResultStatus {
     Success = 'Success',
     Created = 'Created',
@@ -13,11 +14,13 @@ export enum ResultStatus {
 
 export interface ExtensionType extends Error {}
 
-export interface ResultObject<T = null> {
+// ResultObject
+export interface ServiceDto<T = null> {
     status: ResultStatus;
     errorMessage?: string;
     extensions: ExtensionType[];
     data: T;
 }
 
-export type NullableResultObject<T> = Promise<ResultObject<null> | ResultObject<T>>;
+// TODO: не совсем Nullable тип
+export type NullableServiceDto<T> = Promise<ServiceDto<null> | ServiceDto<T>>; // NullableResultObject

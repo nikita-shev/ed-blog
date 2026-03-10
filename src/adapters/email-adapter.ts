@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { createResultObject } from '../core/result-object/utils/createResultObject';
-import { ResultObject, ResultStatus } from '../core/result-object/result-object.types';
+import { badRequestResult, successResult } from '../core/utils/result-object';
+import { ServiceDto } from '../core/utils/result-object/types/result-object.types';
 
 // sendEmail_Not_Work - первая версия на gmail(ban)
 export const emailAdapter = {
@@ -8,7 +8,7 @@ export const emailAdapter = {
         email: string,
         subject: string,
         message: string
-    ): Promise<ResultObject<boolean>> {
+    ): Promise<ServiceDto<boolean>> {
         try {
             let accessToken;
             const transporter = nodemailer.createTransport({
@@ -48,19 +48,17 @@ export const emailAdapter = {
                 html: message
             });
 
-            return createResultObject(true);
+            // return createResultObject(true);
+            return successResult.create(true);
         } catch (e) {
             // console.log(e);
 
-            return createResultObject(false, ResultStatus.BadRequest); // TODO: добавить текст ошибки
+            // return createResultObject(false, ResultStatus.BadRequest); // TODO: добавить текст ошибки
+            return badRequestResult.create(false, 'Bad Request'); // TODO: добавить текст ошибки
         }
     },
 
-    async sendEmail(
-        email: string,
-        subject: string,
-        message: string
-    ): Promise<ResultObject<boolean>> {
+    async sendEmail(email: string, subject: string, message: string): Promise<ServiceDto<boolean>> {
         try {
             // 1. Создаем тестовую учетку (автоматически)
             let testAccount = await nodemailer.createTestAccount();
@@ -89,10 +87,12 @@ export const emailAdapter = {
             // 4. Ссылка на просмотр письма в браузере
             console.log('Посмотреть здесь: %s', nodemailer.getTestMessageUrl(info));
 
-            return createResultObject(true);
+            // return createResultObject(true);
+            return successResult.create(true);
         } catch (e) {
             console.log(e);
-            return createResultObject(false, ResultStatus.BadRequest); // TODO: добавить текст ошибки
+            // return createResultObject(false, ResultStatus.BadRequest); // TODO: добавить текст ошибки
+            return badRequestResult.create(false, 'Bad Request'); // TODO: добавить текст ошибки
         }
     }
 };

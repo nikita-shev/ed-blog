@@ -1,6 +1,5 @@
 import { SessionWithId } from '../../../auth/types/sessions.types';
 import { sessionsCollection } from '../../../db/db.config';
-import { ResultObject } from '../../../core/result-object/result-object.types';
 
 class SecurityDevicesRepository {
     // TODO: findActiveDevices -> queryRepo ???

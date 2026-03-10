@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { authService } from '../../application/auth.service';
-import { resultCodeToHttpException } from '../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 
 export async function confirmRegistrationHandler(
     req: Request<{}, {}, { code: string }>,

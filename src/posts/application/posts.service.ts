@@ -4,8 +4,8 @@ import { PostInputDto } from '../dto';
 import { PostsSearchParams } from '../types/transaction.types';
 import { SearchResult } from '../../core/types/dto.types';
 import { PostFilters } from '../types/filter.types';
-import { createResultObject } from '../../core/result-object/utils/createResultObject';
-import { NullableResultObject, ResultStatus } from '../../core/result-object/result-object.types';
+import { NullableServiceDto } from '../../core/utils/result-object/types/result-object.types';
+import { createdResult, notFoundResult } from '../../core/utils/result-object';
 import { commentRepository } from '../../routes/comments/repositories/comment.repository';
 import {
     Comment,
@@ -53,11 +53,12 @@ export const postsService = {
         postId: string,
         content: string,
         commentatorInfo: CommentatorInfo
-    ): Promise<NullableResultObject<CommentOutputDto>> {
+    ): Promise<NullableServiceDto<CommentOutputDto>> {
         const post = await this.findPostById(postId);
 
         if (!post) {
-            return createResultObject(null, ResultStatus.NotFound);
+            // return createResultObject(null, ResultStatus.NotFound);
+            return notFoundResult.create();
         }
 
         const newComment: Comment = {
@@ -73,7 +74,8 @@ export const postsService = {
             return result;
         }
 
-        return createResultObject(convertCommentData(result.data), ResultStatus.Created);
+        // return createResultObject(convertCommentData(result.data), ResultStatus.Created);
+        return createdResult.create(convertCommentData(result.data));
     }
 };
 

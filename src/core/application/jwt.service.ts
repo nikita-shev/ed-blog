@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { ResultObject, ResultStatus } from '../result-object/result-object.types';
-import { createResultObject } from '../result-object/utils/createResultObject';
+import { successResult, unauthorizedResult } from '../utils/result-object';
+import { ServiceDto } from '../utils/result-object/types/result-object.types';
 
 interface Payload {
     userId: string;
@@ -10,22 +10,25 @@ interface Payload {
 const secretKey = process.env.SECRET_KEY as string;
 
 export const jwtService = {
-    createToken(payload: Payload, options: jwt.SignOptions): ResultObject<string> {
+    createToken(payload: Payload, options: jwt.SignOptions): ServiceDto<string> {
         const token = jwt.sign(payload, secretKey, options);
 
-        return createResultObject(token);
+        // return createResultObject(token);
+        return successResult.create(token);
     },
 
-    checkToken(token: string): ResultObject<null> | ResultObject<Payload> {
+    checkToken(token: string): ServiceDto<null> | ServiceDto<Payload> {
         try {
             const result = jwt.verify(token, secretKey);
             const payload: Payload = {
                 userId: typeof result === 'object' ? (result.userId as string) : result // TODO fix types, how?
             };
 
-            return createResultObject(payload);
+            // return createResultObject(payload);
+            return successResult.create(payload);
         } catch (e) {
-            return createResultObject(null, ResultStatus.Unauthorized);
+            // return createResultObject(null, ResultStatus.Unauthorized);
+            return unauthorizedResult.create();
             // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
             //     { field: 'loginOrEmail', message: 'Wrong credentials' }
             // ]);
@@ -33,9 +36,10 @@ export const jwtService = {
     },
 
     // TODO: fix type
-    decode<T>(token: string): ResultObject<T> {
+    decode<T>(token: string): ServiceDto<T> {
         const payload = jwt.decode(token);
 
-        return createResultObject(payload as T);
+        // return createResultObject(payload as T);
+        return successResult.create(payload as T);
     }
 };

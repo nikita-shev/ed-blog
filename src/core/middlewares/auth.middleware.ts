@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../constants/http-statuses';
 import { jwtService } from '../application/jwt.service';
-import { resultCodeToHttpException } from '../result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../utils/result-object/utils/resultCodeToHttpException';
 import { RateLimitInputDto, rateLimitService } from '../application/rate-limit.service';
 
 const USERNAME = 'admin';
@@ -80,3 +80,6 @@ export async function authRateLimitReedMiddleware(req: Request, res: Response, n
         next();
     }
 }
+
+// TODO: Add test for /auth/registration (rate limit 429 error): authRateLimitReedMiddleware and authRateLimitWriteMiddleware
+// TODO: Add test for /auth/registration (валидация входных данных)

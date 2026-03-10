@@ -1,7 +1,6 @@
 import { rateLimitCollection } from '../../db/db.config';
-import { createResultObject } from '../result-object/utils/createResultObject';
-import { WithId } from 'mongodb';
-import { ResultObject, ResultStatus } from '../result-object/result-object.types';
+import { notFoundResult, successResult, tooManyReqResult } from '../utils/result-object';
+import { ServiceDto } from '../utils/result-object/types/result-object.types';
 
 export interface RateLimitInputDto {
     url: string;
@@ -26,7 +25,7 @@ class RateLimitService {
         this.repo = repo;
     }
 
-    async getData(url: string, ip: string): Promise<ResultObject<boolean>> {
+    async getData(url: string, ip: string): Promise<ServiceDto<boolean>> {
         const result = await this.repo.findRequests(url, ip);
 
         // TODO: сделать отдельный логер(fn)
@@ -36,19 +35,23 @@ class RateLimitService {
         // })
         // console.log('end');
 
-        if (!result.length) return createResultObject(true, ResultStatus.NotFound);
+        // if (!result.length) return createResultObject(true, ResultStatus.NotFound);
+        if (!result.length) return notFoundResult.create(true);
 
         if (result.length >= 5) {
-            return createResultObject(false, ResultStatus.TooManyRequests);
+            // return createResultObject(false, ResultStatus.TooManyRequests);
+            return tooManyReqResult.create(false);
         }
 
-        return createResultObject(true, ResultStatus.Success);
+        // return createResultObject(true, ResultStatus.Success);
+        return successResult.create(true);
     }
 
     async saveData(data: RateLimitInputDto): Promise<any> {
         const r = await this.repo.addData(data);
 
-        return createResultObject(r);
+        // return createResultObject(r);
+        return successResult.create(r);
     }
 }
 
@@ -56,14 +59,13 @@ class RateLimitService {
 
 class RateLimitRepo {
     async findRequests(url: string, ip: string): Promise<RateLimitRequest[]> {
-
         // TODO: заглучшка для тестов (проблема выхода за предел 10с, но не везде)
-        const t: { [key: string]: number} = {
+        const t: { [key: string]: number } = {
             login: 10,
             registration: 13,
             'registration-email-resending': 10,
-            'registration-confirmation': 10,
-        }
+            'registration-confirmation': 10
+        };
         const path = url.split('/').reverse()[0];
 
         const result = await rateLimitCollection

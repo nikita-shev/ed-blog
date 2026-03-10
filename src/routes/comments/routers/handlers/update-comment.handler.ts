@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { CommentInputDto } from '../../dto/comment.dto';
 import { commentsService } from '../../application/comments.service';
-import { resultCodeToHttpException } from '../../../../core/result-object/utils/resultCodeToHttpException';
+import { resultCodeToHttpException } from '../../../../core/utils/result-object/utils/resultCodeToHttpException';
 
 // TODO: fix types for req
 export async function updateCommentHandler(

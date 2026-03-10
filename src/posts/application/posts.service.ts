@@ -68,14 +68,15 @@ export const postsService = {
             createdAt: new Date().toISOString()
         };
         const commentId = await commentRepository.createComment(newComment); // TODO: именование. как правильно?
-        const result = await commentRepository.getCommentById(commentId.data); // TODO: избыточно?
+        const foundComment = await commentRepository.getCommentById(commentId); // TODO: избыточно?
 
-        if (!result.data) {
-            return result;
+        if (!foundComment) {
+            // return createResultObject(null, ResultStatus.NotFound);
+            return notFoundResult.create();
         }
 
         // return createResultObject(convertCommentData(result.data), ResultStatus.Created);
-        return createdResult.create(convertCommentData(result.data));
+        return createdResult.create(convertCommentData(foundComment));
     }
 };
 

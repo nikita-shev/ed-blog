@@ -1,44 +1,44 @@
 import { ObjectId } from 'mongodb';
 import { commentCollection } from '../../../db/db.config';
-import { createResultObject } from '../../../core/result-object/utils/createResultObject';
-import {
-    NullableResultObject,
-    ResultObject,
-    ResultStatus
-} from '../../../core/result-object/result-object.types';
+import { ResultStatus } from '../../../core/utils/result-object/types/result-object.types';
 import { Comment, CommentWithId } from '../types/comments.types';
 import { CommentInputDto } from '../dto/comment.dto';
 
 //TODO: fix null -> Promise<CommentWithId | null> -> во всех местах
 export const commentRepository = {
-    async getCommentById(id: string): Promise<NullableResultObject<CommentWithId>> {
-        const result = await commentCollection.findOne({ _id: new ObjectId(id) });
+    async getCommentById(id: string): Promise<CommentWithId | null> {
+        return await commentCollection.findOne({ _id: new ObjectId(id) });
 
-        if (!result) {
-            return createResultObject(null, ResultStatus.NotFound);
-        }
+        // const result = await commentCollection.findOne({ _id: new ObjectId(id) });
 
-        return createResultObject(result);
+        // if (!result) {
+        //     return createResultObject(null, ResultStatus.NotFound);
+        // }
+        //
+        // return createResultObject(result);
     },
 
-    async createComment(comment: Comment): Promise<ResultObject<string>> {
+    async createComment(comment: Comment): Promise<string> {
         const insertResult = await commentCollection.insertOne(comment);
 
-        return createResultObject(insertResult.insertedId.toString());
+        // return createResultObject(insertResult.insertedId.toString());
+        return insertResult.insertedId.toString();
     },
 
-    async updateComment(id: string, content: CommentInputDto): Promise<ResultObject<boolean>> {
+    async updateComment(id: string, content: CommentInputDto): Promise<boolean> {
         const result = await commentCollection.updateOne(
             { _id: new ObjectId(id) },
             { $set: content }
         );
 
-        return createResultObject(result.matchedCount === 1, ResultStatus.NoContent);
+        // return createResultObject(result.matchedCount === 1, ResultStatus.NoContent);
+        return result.matchedCount === 1;
     },
 
-    async deleteComment(id: string): Promise<ResultObject<boolean>> {
+    async deleteComment(id: string): Promise<boolean> {
         const result = await commentCollection.deleteOne({ _id: new ObjectId(id) });
 
-        return createResultObject(result.deletedCount === 1, ResultStatus.NoContent);
+        // return createResultObject(result.deletedCount === 1, ResultStatus.NoContent);
+        return result.deletedCount === 1;
     }
 };

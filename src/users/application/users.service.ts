@@ -4,7 +4,12 @@ import { usersRepository } from '../repositories/users.repository';
 import { Error } from '../../core/types/error.types';
 import { User, UserWithoutPassword } from '../types/users.types';
 import { add, isPast, parseISO } from 'date-fns';
-import { badRequestResult, notFoundResult, successResult } from '../../core/utils/result-object';
+import {
+    badRequestResult,
+    noContentResult,
+    notFoundResult,
+    successResult
+} from '../../core/utils/result-object';
 import { ServiceDto } from '../../core/utils/result-object/types/result-object.types';
 import { convertFullUserInfo } from '../routers/mappers/mapToUserOutput';
 
@@ -65,7 +70,12 @@ export const usersService = {
             ]);
         }
 
-        return await usersRepository.confirmUser(userInfo._id);
+        // return await usersRepository.confirmUser(userInfo._id);
+        const isConfirmUser = await usersRepository.confirmUser(userInfo._id);
+
+        return isConfirmUser
+            ? noContentResult.create(isConfirmUser)
+            : badRequestResult.create(isConfirmUser, 'Bad Request');
     },
 
     async deleteUser(id: string): Promise<boolean> {

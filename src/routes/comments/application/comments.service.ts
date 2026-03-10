@@ -1,19 +1,25 @@
 import { commentRepository } from '../repositories/comment.repository';
 import { convertCommentData } from '../routers/mappers/mapToCommentOutput';
-import { forbiddenResult, successResult } from '../../../core/utils/result-object';
+import {
+    forbiddenResult,
+    noContentResult,
+    notFoundResult,
+    successResult
+} from '../../../core/utils/result-object';
 import { NullableServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { CommentInputDto, CommentOutputDto } from '../dto/comment.dto';
 
 export const commentsService = {
     async getCommentById(id: string): NullableServiceDto<CommentOutputDto> {
-        const result = await commentRepository.getCommentById(id);
+        const foundComment = await commentRepository.getCommentById(id);
 
-        if (!result.data) {
-            return result;
+        if (!foundComment) {
+            // return createResultObject(null, ResultStatus.NotFound);
+            return notFoundResult.create();
         }
 
         // return createResultObject(convertCommentData(result.data));
-        return successResult.create(convertCommentData(result.data));
+        return successResult.create(convertCommentData(foundComment));
     },
 
     async updateComment(
@@ -21,7 +27,7 @@ export const commentsService = {
         commentId: string,
         content: CommentInputDto
     ): NullableServiceDto<boolean> {
-        const result = await this.getCommentById(commentId);
+        const result = await this.getCommentById(commentId); // TODO: так можно?
 
         if (!result.data) {
             return result;
@@ -32,7 +38,10 @@ export const commentsService = {
             return forbiddenResult.create();
         }
 
-        return commentRepository.updateComment(commentId, content);
+        // return commentRepository.updateComment(commentId, content);
+        // return createResultObject(result.matchedCount === 1, ResultStatus.NoContent);
+        const isUpdated = await commentRepository.updateComment(commentId, content);
+        return noContentResult.create(isUpdated);
     },
 
     async deleteComment(userID: string, commentId: string): NullableServiceDto<boolean> {
@@ -47,6 +56,9 @@ export const commentsService = {
             return forbiddenResult.create();
         }
 
-        return commentRepository.deleteComment(commentId);
+        // return commentRepository.deleteComment(commentId);
+        // return createResultObject(result.deletedCount === 1, ResultStatus.NoContent);
+        const isDeleted = await commentRepository.deleteComment(commentId);
+        return noContentResult.create(isDeleted);
     }
 };

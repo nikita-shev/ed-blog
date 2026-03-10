@@ -1,8 +1,6 @@
 import { userCollection } from '../../db/db.config';
 import { User } from '../types/users.types';
 import { ObjectId, WithId } from 'mongodb';
-import { createResultObject } from '../../core/result-object/utils/createResultObject';
-import { ResultObject, ResultStatus } from '../../core/result-object/result-object.types';
 
 export const usersRepository = {
     async findUser(loginOrEmail: string): Promise<WithId<User> | null> {
@@ -38,17 +36,20 @@ export const usersRepository = {
         return result.insertedId.toString();
     },
 
-    async confirmUser(id: ObjectId): Promise<ResultObject<boolean>> {
+    // async confirmUser(id: ObjectId): Promise<ResultObject<boolean>> {
+    async confirmUser(id: ObjectId): Promise<boolean> {
         const result = await userCollection.updateOne(
             { _id: id },
             { $set: { 'emailConfirmation.isConfirmed': true } }
         );
-        const isUpdated = result.matchedCount === 1;
 
-        return createResultObject(
-            isUpdated,
-            isUpdated ? ResultStatus.NoContent : ResultStatus.BadRequest
-        );
+        // const isUpdated = result.matchedCount === 1;
+        // return createResultObject(
+        //     isUpdated,
+        //     isUpdated ? ResultStatus.NoContent : ResultStatus.BadRequest
+        // );
+
+        return result.matchedCount === 1;
     },
 
     async updateConfirmationCode(userId: ObjectId, code: string): Promise<void> {

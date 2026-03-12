@@ -1,4 +1,4 @@
-import { commentRepository } from '../repositories/comment.repository';
+import { CommentRepository } from '../repositories/comment.repository';
 import { convertCommentData } from '../routers/mappers/mapToCommentOutput';
 import {
     forbiddenResult,
@@ -9,9 +9,11 @@ import {
 import { NullableServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { CommentInputDto, CommentOutputDto } from '../dto/comment.dto';
 
-export const commentsService = {
+export class CommentsService {
+    constructor(private commentRepository: CommentRepository) {}
+
     async getCommentById(id: string): NullableServiceDto<CommentOutputDto> {
-        const foundComment = await commentRepository.getCommentById(id);
+        const foundComment = await this.commentRepository.getCommentById(id);
 
         if (!foundComment) {
             // return createResultObject(null, ResultStatus.NotFound);
@@ -20,7 +22,7 @@ export const commentsService = {
 
         // return createResultObject(convertCommentData(result.data));
         return successResult.create(convertCommentData(foundComment));
-    },
+    }
 
     async updateComment(
         userID: string,
@@ -40,9 +42,9 @@ export const commentsService = {
 
         // return commentRepository.updateComment(commentId, content);
         // return createResultObject(result.matchedCount === 1, ResultStatus.NoContent);
-        const isUpdated = await commentRepository.updateComment(commentId, content);
+        const isUpdated = await this.commentRepository.updateComment(commentId, content);
         return noContentResult.create(isUpdated);
-    },
+    }
 
     async deleteComment(userID: string, commentId: string): NullableServiceDto<boolean> {
         const result = await this.getCommentById(commentId);
@@ -58,7 +60,7 @@ export const commentsService = {
 
         // return commentRepository.deleteComment(commentId);
         // return createResultObject(result.deletedCount === 1, ResultStatus.NoContent);
-        const isDeleted = await commentRepository.deleteComment(commentId);
+        const isDeleted = await this.commentRepository.deleteComment(commentId);
         return noContentResult.create(isDeleted);
     }
-};
+}

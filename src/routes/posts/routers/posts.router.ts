@@ -20,13 +20,16 @@ import { convertPostData, mapToPostOutput } from './mappers/mapToPostOutput';
 import { CommentsSearchParams } from '../../comments/types/transaction.types';
 import { OutputDto } from '../../../core/types/dto.types';
 import { matchedData } from 'express-validator';
-import { commentQueryRepository } from '../../comments/repositories/comment.query.repository';
 import { PostsSearchParams, RequestQuery, ResponseBody } from '../types/transaction.types';
+import { CommentQueryRepository } from '../../comments/repositories/comment.query.repository';
 
 export const postsRouter = Router();
 
 export class PostsController {
-    constructor(private postsService: PostsService) {}
+    constructor(
+        private postsService: PostsService,
+        private commentQueryRepository: CommentQueryRepository
+    ) {}
 
     async createComment(
         req: Request<{ postId: string }, {}, CommentInputDto>,
@@ -88,7 +91,7 @@ export class PostsController {
             locations: ['query'],
             includeOptionals: true
         });
-        const comments = await commentQueryRepository.getComments(
+        const comments = await this.commentQueryRepository.getComments(
             req.params.postId,
             sanitizedQuery
         );

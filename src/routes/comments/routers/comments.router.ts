@@ -1,28 +1,73 @@
-import { Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { validateId } from '../../../core/validation/id-validation';
 import { inputValidationResultMiddleware } from '../../../core/middlewares/validation/input-validtion-result.middleware';
-import { getCommentHandler } from './handlers/get-comment.handler';
-import { deleteCommentHandler } from './handlers/delete-comment.handler';
 import { authBearerMiddleware } from '../../../core/middlewares/auth.middleware';
-import { updateCommentHandler } from './handlers/update-comment.handler';
 import { commentInputDtoValidation } from '../../posts/middlewares/validation/input-dto-validation';
+import { CommentsService } from '../application/comments.service';
+import { CommentInputDto, CommentOutputDto } from '../dto/comment.dto';
+import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
+import { commentsController } from '../../../composition-root';
 
 export const commentsRouter = Router();
 
+export class CommentsController {
+    constructor(private commentsService: CommentsService) {}
+
+    async getCommentHandler(req: Request<{ id: string }>, res: Response<CommentOutputDto>) {
+        const result = await this.commentsService.getCommentById(req.params.id);
+        const status = resultCodeToHttpException(result.status);
+
+        if (!result.data) {
+            return res.sendStatus(status);
+        }
+
+        res.status(status).send(result.data);
+    }
+
+    async updateCommentHandler(req: Request<{ id: string }, {}, CommentInputDto>, res: Response) {
+        const userId = req.appContext.userId as string;
+        const result = await this.commentsService.updateComment(userId, req.params.id, req.body);
+        const status = resultCodeToHttpException(result.status);
+
+        if (!result.data) {
+            return res.sendStatus(status);
+        }
+
+        res.status(status).send(result.data);
+    }
+
+    async deleteCommentHandler(req: Request<{ id: string }>, res: Response) {
+        const userId = req.appContext.userId as string;
+        const result = await this.commentsService.deleteComment(userId, req.params.id);
+        const status = resultCodeToHttpException(result.status);
+
+        if (!result.data) {
+            return res.sendStatus(status);
+        }
+
+        res.status(status).send(result.data);
+    }
+}
+
 commentsRouter
-    .get('/:id', validateId('id'), inputValidationResultMiddleware, getCommentHandler)
+    .get(
+        '/:id',
+        validateId('id'),
+        inputValidationResultMiddleware,
+        commentsController.getCommentHandler.bind(commentsController)
+    )
     .put(
         '/:id',
         authBearerMiddleware,
         validateId('id'),
         commentInputDtoValidation,
         inputValidationResultMiddleware,
-        updateCommentHandler
+        commentsController.updateCommentHandler.bind(commentsController)
     )
     .delete(
         '/:id',
         authBearerMiddleware,
         validateId('id'),
         inputValidationResultMiddleware,
-        deleteCommentHandler
+        commentsController.deleteCommentHandler.bind(commentsController)
     );

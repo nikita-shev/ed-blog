@@ -6,12 +6,15 @@ import { SearchResult } from '../../../core/types/dto.types';
 import { PostFilters } from '../types/filter.types';
 import { NullableServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { createdResult, notFoundResult } from '../../../core/utils/result-object';
-import { commentRepository } from '../../comments/repositories/comment.repository';
 import { Comment, CommentatorInfo, CommentWithId } from '../../comments/types/comments.types';
 import { CommentOutputDto } from '../../comments/dto/comment.dto';
+import { CommentRepository } from '../../comments/repositories/comment.repository';
 
 export class PostsService {
-    constructor(private postsRepository: PostsRepository) {}
+    constructor(
+        private postsRepository: PostsRepository,
+        private commentRepository: CommentRepository
+    ) {}
 
     async findPosts(
         params: PostsSearchParams, // TODO: rename
@@ -65,8 +68,9 @@ export class PostsService {
             postId,
             createdAt: new Date().toISOString()
         };
-        const commentId = await commentRepository.createComment(newComment); // TODO: именование. как правильно?
-        const foundComment = await commentRepository.getCommentById(commentId); // TODO: избыточно?
+        // TODO: commentRepository -> commentService; fix constructor
+        const commentId = await this.commentRepository.createComment(newComment); // TODO: именование. как правильно?
+        const foundComment = await this.commentRepository.getCommentById(commentId); // TODO: избыточно?
 
         if (!foundComment) {
             // return createResultObject(null, ResultStatus.NotFound);

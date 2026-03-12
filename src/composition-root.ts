@@ -8,6 +8,10 @@ import { SecurityDevicesController } from './routes/securityDevices/routers/secu
 import { PostsRepository } from './routes/posts/repositories/posts.repository';
 import { PostsService } from './routes/posts/application/posts.service';
 import { PostsController } from './routes/posts/routers/posts.router';
+import { CommentQueryRepository } from './routes/comments/repositories/comment.query.repository';
+import { CommentRepository } from './routes/comments/repositories/comment.repository';
+import { CommentsService } from './routes/comments/application/comments.service';
+import { CommentsController } from './routes/comments/routers/comments.router';
 
 // users
 export const usersRepository = new UsersRepository(); // delete export
@@ -20,7 +24,13 @@ const securityDevicesRepository = new SecurityDevicesRepository();
 const securityDevicesService = new SecurityDevicesService(securityDevicesRepository);
 export const securityDevicesController = new SecurityDevicesController(securityDevicesService);
 
+// comments
+const commentQueryRepository = new CommentQueryRepository();
+const commentRepository = new CommentRepository();
+const commentsService = new CommentsService(commentRepository);
+export const commentsController = new CommentsController(commentsService);
+
 // posts
 const postsRepository = new PostsRepository();
-const postsService = new PostsService(postsRepository);
-export const postsController = new PostsController(postsService);
+const postsService = new PostsService(postsRepository, commentRepository);
+export const postsController = new PostsController(postsService, commentQueryRepository);

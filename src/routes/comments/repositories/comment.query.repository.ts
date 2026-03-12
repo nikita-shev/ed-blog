@@ -6,7 +6,10 @@ import { CommentsSearchParams } from '../types/transaction.types';
 import { OutputDto } from '../../../core/types/dto.types';
 import { CommentOutputDto } from '../dto/comment.dto';
 
-export const commentQueryRepository = {
+export class CommentQueryRepository {
+    private _convertCommentData = convertCommentData;
+    private _mapToCommentOutput = mapToCommentOutput;
+
     async getComments(
         postId: string,
         queryParams: CommentsSearchParams
@@ -30,8 +33,5 @@ export const commentQueryRepository = {
         const totalCount = await commentCollection.countDocuments(filter);
 
         return this._mapToCommentOutput({ items: comments, totalCount }, { pageNumber, pageSize }); // TODO: ResultObj ???
-    },
-
-    _convertCommentData: convertCommentData,
-    _mapToCommentOutput: mapToCommentOutput
-};
+    }
+}

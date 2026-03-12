@@ -1,7 +1,7 @@
 import { SessionWithId } from '../../auth/types/sessions.types';
 import { sessionsCollection } from '../../../db/db.config';
 
-class SecurityDevicesRepository {
+export class SecurityDevicesRepository {
     // TODO: findActiveDevices -> queryRepo ???
     async findActiveDevices(userId: string): Promise<SessionWithId[]> {
         return await sessionsCollection.find({ userId }).toArray();
@@ -19,5 +19,3 @@ class SecurityDevicesRepository {
         return result.deletedCount === 1;
     }
 }
-
-export const securityDevicesRepository = new SecurityDevicesRepository(); // TODO: перенести в отдельный файл

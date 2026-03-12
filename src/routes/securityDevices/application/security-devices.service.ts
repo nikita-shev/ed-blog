@@ -1,7 +1,6 @@
 import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { jwtService } from '../../../core/application/jwt.service';
 import { UserSessionData } from '../../auth/types/sessions.types';
-import { securityDevicesRepository } from '../repositories/security-devices.repository';
 import {
     forbiddenResult,
     noContentResult,
@@ -11,12 +10,15 @@ import {
 import { DevicesOutputDto } from '../dto/devices.dto';
 import { mapToDevicesOutput } from '../routers/mappers/mapToDevicesOutput';
 import { authRepository } from '../../auth/repositories/auth.repository';
+import { SecurityDevicesRepository } from '../repositories/security-devices.repository';
 
-class SecurityDevicesService {
+export class SecurityDevicesService {
+    constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
+
     // TODO: getActiveDevices -> queryRepo ???
     async getActiveDevices(token: string): Promise<ServiceDto<DevicesOutputDto[]>> {
         const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
-        const result = await securityDevicesRepository.findActiveDevices(payload.userId);
+        const result = await this.securityDevicesRepository.findActiveDevices(payload.userId);
 
         // return createResultObject(mapToDevicesOutput(result)); // TODO: Что делать если девайсов нет?
         return successResult.create(mapToDevicesOutput(result)); // TODO: Что делать если девайсов нет?
@@ -24,7 +26,7 @@ class SecurityDevicesService {
 
     async terminateAllThirdPartySessions(token: string): Promise<ServiceDto<boolean>> {
         const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
-        const result = await securityDevicesRepository.terminateAllThirdPartySessions(
+        const result = await this.securityDevicesRepository.terminateAllThirdPartySessions(
             payload.userId,
             payload.deviceId
         );
@@ -40,7 +42,7 @@ class SecurityDevicesService {
         // if (!foundSession) return createResultObject(null, ResultStatus.NotFound);
         if (!foundSession) return notFoundResult.create();
 
-        const deletedResult = await securityDevicesRepository.terminateSpecifiedDeviceSession(
+        const deletedResult = await this.securityDevicesRepository.terminateSpecifiedDeviceSession(
             payload.userId,
             deviceId
         );
@@ -66,7 +68,5 @@ class SecurityDevicesService {
         // );
     }
 }
-
-export const securityDevicesService = new SecurityDevicesService(); // TODO: перенести в отдельный файл
 
 // TODO: <Omit<UserSessionData, 'device' | 'ip'>> -> в отдельный тип

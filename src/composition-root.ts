@@ -12,6 +12,9 @@ import { CommentQueryRepository } from './routes/comments/repositories/comment.q
 import { CommentRepository } from './routes/comments/repositories/comment.repository';
 import { CommentsService } from './routes/comments/application/comments.service';
 import { CommentsController } from './routes/comments/routers/comments.router';
+import { BlogsRepository } from './routes/blogs/repositories/blogs.repository';
+import { BlogsService } from './routes/blogs/application/blogs.service';
+import { BlogsController } from './routes/blogs/routers/blogs.router';
 
 // users
 export const usersRepository = new UsersRepository(); // delete export
@@ -34,3 +37,8 @@ export const commentsController = new CommentsController(commentsService);
 const postsRepository = new PostsRepository();
 const postsService = new PostsService(postsRepository, commentRepository);
 export const postsController = new PostsController(postsService, commentQueryRepository);
+
+// blogs
+const blogsRepository = new BlogsRepository();
+const blogsService = new BlogsService(blogsRepository, postsService);
+export const blogsController = new BlogsController(blogsService);

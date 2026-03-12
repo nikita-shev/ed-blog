@@ -13,7 +13,7 @@ export const commentsRouter = Router();
 export class CommentsController {
     constructor(private commentsService: CommentsService) {}
 
-    async getCommentHandler(req: Request<{ id: string }>, res: Response<CommentOutputDto>) {
+    async getComment(req: Request<{ id: string }>, res: Response<CommentOutputDto>) {
         const result = await this.commentsService.getCommentById(req.params.id);
         const status = resultCodeToHttpException(result.status);
 
@@ -24,7 +24,7 @@ export class CommentsController {
         res.status(status).send(result.data);
     }
 
-    async updateCommentHandler(req: Request<{ id: string }, {}, CommentInputDto>, res: Response) {
+    async updateComment(req: Request<{ id: string }, {}, CommentInputDto>, res: Response) {
         const userId = req.appContext.userId as string;
         const result = await this.commentsService.updateComment(userId, req.params.id, req.body);
         const status = resultCodeToHttpException(result.status);
@@ -36,7 +36,7 @@ export class CommentsController {
         res.status(status).send(result.data);
     }
 
-    async deleteCommentHandler(req: Request<{ id: string }>, res: Response) {
+    async deleteComment(req: Request<{ id: string }>, res: Response) {
         const userId = req.appContext.userId as string;
         const result = await this.commentsService.deleteComment(userId, req.params.id);
         const status = resultCodeToHttpException(result.status);
@@ -54,7 +54,7 @@ commentsRouter
         '/:id',
         validateId('id'),
         inputValidationResultMiddleware,
-        commentsController.getCommentHandler.bind(commentsController)
+        commentsController.getComment.bind(commentsController)
     )
     .put(
         '/:id',
@@ -62,12 +62,12 @@ commentsRouter
         validateId('id'),
         commentInputDtoValidation,
         inputValidationResultMiddleware,
-        commentsController.updateCommentHandler.bind(commentsController)
+        commentsController.updateComment.bind(commentsController)
     )
     .delete(
         '/:id',
         authBearerMiddleware,
         validateId('id'),
         inputValidationResultMiddleware,
-        commentsController.deleteCommentHandler.bind(commentsController)
+        commentsController.deleteComment.bind(commentsController)
     );

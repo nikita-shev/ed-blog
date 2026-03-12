@@ -6,7 +6,7 @@ import { SearchResult } from '../../../core/types/dto.types';
 import { BlogsSearchParams } from '../types/transaction.types';
 import { SortDirection } from '../../../core/types/sorting.types';
 
-export const blogsRepository = {
+export class BlogsRepository {
     async findBlogs(params: BlogsSearchParams): Promise<SearchResult<BlogWithId>> {
         const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm } = params;
 
@@ -23,27 +23,27 @@ export const blogsRepository = {
         const totalCount = await blogCollection.countDocuments(filter);
 
         return { items: blogs, totalCount };
-    },
+    }
 
     async findBlogById(id: string): Promise<BlogWithId | null> {
         return blogCollection.findOne({ _id: new ObjectId(id) });
-    },
+    }
 
     async createNewBlog(data: Blog): Promise<string> {
         const insertResult = await blogCollection.insertOne(data);
 
         return insertResult.insertedId.toString();
-    },
+    }
 
     async updateBlog(id: string, data: BlogInputDto): Promise<boolean> {
         const result = await blogCollection.updateOne({ _id: new ObjectId(id) }, { $set: data });
 
         return result.matchedCount === 1;
-    },
+    }
 
     async deleteBlog(id: string): Promise<boolean> {
         const result = await blogCollection.deleteOne({ _id: new ObjectId(id) });
 
         return result.deletedCount === 1;
     }
-};
+}

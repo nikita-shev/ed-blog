@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getDevicesHandler } from './handlers/get-devices.handler';
-import { checkRefreshTokenMiddleware } from '../../../auth/middlewares/authorizations/check-refresh-token.middleware';
+import { checkRefreshTokenMiddleware } from '../../auth/middlewares/authorizations/check-refresh-token.middleware';
 import { terminateAllThirdPartySessionsHandler } from './handlers/terminate-all-third-party-sessions.handler';
 import { terminateSpecifiedDeviceSessionHandler } from './handlers/terminate-specified-device-session.handler';
 

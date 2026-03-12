@@ -5,7 +5,7 @@ import { getCommentHandler } from './handlers/get-comment.handler';
 import { deleteCommentHandler } from './handlers/delete-comment.handler';
 import { authBearerMiddleware } from '../../../core/middlewares/auth.middleware';
 import { updateCommentHandler } from './handlers/update-comment.handler';
-import { commentInputDtoValidation } from '../../../posts/middlewares/validation/input-dto-validation';
+import { commentInputDtoValidation } from '../../posts/middlewares/validation/input-dto-validation';
 
 export const commentsRouter = Router();
 

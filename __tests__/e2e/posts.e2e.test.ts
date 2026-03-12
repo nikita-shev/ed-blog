@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { PATHS } from '../../src/core/constants/paths';
 import { HttpStatus } from '../../src/core/constants/http-statuses';
-import { PostInputDto, PostOutputDto } from '../../src/posts/dto';
+import { PostInputDto, PostOutputDto } from '../../src/routes/posts/dto';
 import { initTestApp } from '../common/initTestApp';
 import { authorizationData, incorrectId } from '../common/constants/mock-data';
 import {

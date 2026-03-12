@@ -1,11 +1,11 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import { PATHS } from './core/constants/paths';
-import { blogsRouter } from './blogs/routers/blogs.router';
-import { postsRouter } from './posts/routers/posts.router';
-import { testingRouter } from './testing/testing.router';
-import { usersRouter } from './users/routers/users.router';
-import { authRouter } from './auth/routers/auth.router';
+import { blogsRouter } from './routes/blogs/routers/blogs.router';
+import { postsRouter } from './routes/posts/routers/posts.router';
+import { usersRouter } from './routes/users/routers/users.router';
+import { authRouter } from './routes/auth/routers/auth.router';
+import { testingRouter } from './routes/testing/testing.router';
 import { commentsRouter } from './routes/comments/routers/comments.router';
 import { securityDevices } from './routes/securityDevices/routers/security-devices.router';
 

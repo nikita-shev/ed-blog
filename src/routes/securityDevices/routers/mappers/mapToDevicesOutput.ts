@@ -1,4 +1,4 @@
-import { SessionWithId } from '../../../../auth/types/sessions.types';
+import { SessionWithId } from '../../../auth/types/sessions.types';
 import { DevicesOutputDto } from '../../dto/devices.dto';
 
 export const mapToDevicesOutput = (data: SessionWithId[]): DevicesOutputDto[] => {

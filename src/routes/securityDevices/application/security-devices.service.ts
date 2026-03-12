@@ -1,6 +1,6 @@
 import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { jwtService } from '../../../core/application/jwt.service';
-import { UserSessionData } from '../../../auth/types/sessions.types';
+import { UserSessionData } from '../../auth/types/sessions.types';
 import { securityDevicesRepository } from '../repositories/security-devices.repository';
 import {
     forbiddenResult,
@@ -10,7 +10,7 @@ import {
 } from '../../../core/utils/result-object';
 import { DevicesOutputDto } from '../dto/devices.dto';
 import { mapToDevicesOutput } from '../routers/mappers/mapToDevicesOutput';
-import { authRepository } from '../../../auth/repositories/auth.repository';
+import { authRepository } from '../../auth/repositories/auth.repository';
 
 class SecurityDevicesService {
     // TODO: getActiveDevices -> queryRepo ???

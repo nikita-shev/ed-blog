@@ -9,11 +9,11 @@ import {
 } from '../common/constants/mock-data';
 import { incorrectField, maxFieldLengthExceeded, requiredField } from '../common/utils/errors';
 import { mapData } from '../common/utils/mapData';
-import { BlogInputDto, BlogOutputDto } from '../../src/blogs/dto';
+import { BlogInputDto, BlogOutputDto } from '../../src/routes/blogs/dto';
 import { TestData } from '../common/utils/test-data';
 import { initTestApp } from '../common/initTestApp';
-import { PostInputWithoutBlogIdDto } from '../../src/posts/dto/post.input-dto';
-import { PostOutputDto } from '../../src/posts/dto';
+import { PostInputWithoutBlogIdDto } from '../../src/routes/posts/dto/post.input-dto';
+import { PostOutputDto } from '../../src/routes/posts/dto';
 
 describe('Tests path "/blogs"', () => {
     const { app, runDB, clearDb } = initTestApp();

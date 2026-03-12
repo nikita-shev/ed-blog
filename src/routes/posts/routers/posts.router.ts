@@ -10,7 +10,6 @@ import { CommentSortFields } from '../../comments/types/sorting.types';
 import { PostsService } from '../application/posts.service';
 import { CommentInputDto } from '../dto/post.dto';
 import { CommentOutputDto } from '../../comments/dto/comment.dto';
-import { authService } from '../../auth/application/auth.service';
 import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 import { CommentatorInfo } from '../../comments/types/comments.types';
 import { postsController } from '../../../composition-root';
@@ -22,12 +21,14 @@ import { OutputDto } from '../../../core/types/dto.types';
 import { matchedData } from 'express-validator';
 import { PostsSearchParams, RequestQuery, ResponseBody } from '../types/transaction.types';
 import { CommentQueryRepository } from '../../comments/repositories/comment.query.repository';
+import { AuthService } from '../../auth/application/auth.service';
 
 export const postsRouter = Router();
 
 export class PostsController {
     constructor(
         private postsService: PostsService,
+        private authService: AuthService,
         private commentQueryRepository: CommentQueryRepository
     ) {}
 
@@ -36,7 +37,7 @@ export class PostsController {
         res: Response<CommentOutputDto>
     ) {
         const userId = req.appContext.userId as string;
-        const userSearchResult = await authService.getInfoAboutUser(userId);
+        const userSearchResult = await this.authService.getInfoAboutUser(userId);
 
         if (!userSearchResult.data) {
             return res.sendStatus(resultCodeToHttpException(userSearchResult.status));

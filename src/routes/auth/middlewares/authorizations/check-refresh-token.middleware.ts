@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { jwtService } from '../../../../core/application/jwt.service';
-import { authService } from '../../application/auth.service';
+import { authService } from '../../../../composition-root';
 import { resultCodeToHttpException } from '../../../../core/utils/result-object/utils/resultCodeToHttpException';
 
 export async function checkRefreshTokenMiddleware(req: Request, res: Response, next: NextFunction) {

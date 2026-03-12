@@ -15,11 +15,19 @@ import { CommentsController } from './routes/comments/routers/comments.router';
 import { BlogsRepository } from './routes/blogs/repositories/blogs.repository';
 import { BlogsService } from './routes/blogs/application/blogs.service';
 import { BlogsController } from './routes/blogs/routers/blogs.router';
+import { AuthRepository } from './routes/auth/repositories/auth.repository';
+import { AuthService } from './routes/auth/application/auth.service';
+import { AuthController } from './routes/auth/routers/auth.router';
+
+// auth
+export const authRepository = new AuthRepository(); // delete export
+export const authService = new AuthService(authRepository); // TODO: используется в middleware
+export const authController = new AuthController(authService);
 
 // users
 export const usersRepository = new UsersRepository(); // delete export
 const usersQueryRepository = new UsersQueryRepository();
-export const usersService = new UsersService(usersRepository); // delete export
+export const usersService = new UsersService(usersRepository); // use for tests
 export const usersController = new UsersController(usersService, usersQueryRepository);
 
 // devices(securityDevices)
@@ -36,7 +44,11 @@ export const commentsController = new CommentsController(commentsService);
 // posts
 const postsRepository = new PostsRepository();
 const postsService = new PostsService(postsRepository, commentRepository);
-export const postsController = new PostsController(postsService, commentQueryRepository);
+export const postsController = new PostsController(
+    postsService,
+    authService,
+    commentQueryRepository
+);
 
 // blogs
 const blogsRepository = new BlogsRepository();

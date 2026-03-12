@@ -9,8 +9,8 @@ import {
 } from '../../../core/utils/result-object';
 import { DevicesOutputDto } from '../dto/devices.dto';
 import { mapToDevicesOutput } from '../routers/mappers/mapToDevicesOutput';
-import { authRepository } from '../../auth/repositories/auth.repository';
 import { SecurityDevicesRepository } from '../repositories/security-devices.repository';
+import { authRepository } from '../../../composition-root';
 
 export class SecurityDevicesService {
     constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
@@ -38,6 +38,7 @@ export class SecurityDevicesService {
     async terminateSpecifiedDeviceSession(token: string, deviceId: string): Promise<ServiceDto> {
         const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
 
+        // TODO: authRepository -> authService
         const foundSession = await authRepository.findSessionByDeviceId(deviceId);
         // if (!foundSession) return createResultObject(null, ResultStatus.NotFound);
         if (!foundSession) return notFoundResult.create();

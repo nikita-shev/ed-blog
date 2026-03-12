@@ -1,4 +1,4 @@
-import { postsRepository } from '../repositories/posts.repository';
+import { PostsRepository } from '../repositories/posts.repository';
 import { Post, PostWithId } from '../types/posts.types';
 import { PostInputDto } from '../dto';
 import { PostsSearchParams } from '../types/transaction.types';
@@ -10,17 +10,19 @@ import { commentRepository } from '../../comments/repositories/comment.repositor
 import { Comment, CommentatorInfo, CommentWithId } from '../../comments/types/comments.types';
 import { CommentOutputDto } from '../../comments/dto/comment.dto';
 
-export const postsService = {
+export class PostsService {
+    constructor(private postsRepository: PostsRepository) {}
+
     async findPosts(
         params: PostsSearchParams, // TODO: rename
         filteringParams?: PostFilters // TODO: rename
     ): Promise<SearchResult<PostWithId>> {
-        return postsRepository.findPosts(params, filteringParams);
-    },
+        return this.postsRepository.findPosts(params, filteringParams);
+    }
 
     async findPostById(id: string): Promise<PostWithId | null> {
-        return postsRepository.findPostById(id);
-    },
+        return this.postsRepository.findPostById(id);
+    }
 
     async createPost(data: PostInputDto): Promise<PostWithId | null> {
         const { blogId, title, shortDescription, content } = data;
@@ -32,18 +34,18 @@ export const postsService = {
             content,
             blogId
         };
-        const postId = await postsRepository.createPost(newPost);
+        const postId = await this.postsRepository.createPost(newPost);
 
         return this.findPostById(postId); // TODO: 50/50
-    },
+    }
 
     async updatePost(id: string, data: PostInputDto): Promise<boolean> {
-        return postsRepository.updatePost(id, data);
-    },
+        return this.postsRepository.updatePost(id, data);
+    }
 
     async deletePost(id: string): Promise<boolean> {
-        return postsRepository.deletePost(id);
-    },
+        return this.postsRepository.deletePost(id);
+    }
 
     async createComment(
         postId: string,
@@ -74,7 +76,7 @@ export const postsService = {
         // return createResultObject(convertCommentData(result.data), ResultStatus.Created);
         return createdResult.create(convertCommentData(foundComment));
     }
-};
+}
 
 // TODO: move, rename?
 export function convertCommentData(comment: CommentWithId): CommentOutputDto {

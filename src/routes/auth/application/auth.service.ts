@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { usersRepository } from '../../users/repositories/users.repository';
+import { usersRepository, usersService } from '../../../composition-root';
 import { jwtService } from '../../../core/application/jwt.service';
 import {
     badRequestResult,
@@ -19,7 +19,6 @@ import {
     ServiceDto
 } from '../../../core/utils/result-object/types/result-object.types';
 import { CurrentUser, ServiceInfo } from '../types/auth.types';
-import { usersService } from '../../users/application/users.service';
 import { createMessage, emailAdapter } from '../../../adapters/email-adapter';
 import { authRepository } from '../repositories/auth.repository';
 import { UserSessionData } from '../types/sessions.types';

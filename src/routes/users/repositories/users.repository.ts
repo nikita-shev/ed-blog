@@ -2,39 +2,39 @@ import { userCollection } from '../../../db/db.config';
 import { User } from '../types/users.types';
 import { ObjectId, WithId } from 'mongodb';
 
-export const usersRepository = {
+export class UsersRepository {
     async findUser(loginOrEmail: string): Promise<WithId<User> | null> {
         return userCollection.findOne({
             $or: [{ login: loginOrEmail }, { email: loginOrEmail }]
         });
-    },
+    }
 
     async findUserById(userId: string): Promise<WithId<User> | null> {
         return userCollection.findOne({ _id: new ObjectId(userId) });
-    },
+    }
 
     // TODO: duplicate findUserByLogin & findUserByEmail
     async findUserByLogin(login: string): Promise<boolean> {
         const user = await userCollection.findOne({ login });
 
         return Boolean(user);
-    },
+    }
 
     async findUserByEmail(email: string): Promise<boolean> {
         const user = await userCollection.findOne({ email });
 
         return Boolean(user);
-    },
+    }
 
     async findUserByConfirmationCode(code: string): Promise<WithId<User> | null> {
         return userCollection.findOne({ 'emailConfirmation.confirmationCode': code });
-    },
+    }
 
     async createUser(credentials: User): Promise<string> {
         const result = await userCollection.insertOne(credentials);
 
         return result.insertedId.toString();
-    },
+    }
 
     // async confirmUser(id: ObjectId): Promise<ResultObject<boolean>> {
     async confirmUser(id: ObjectId): Promise<boolean> {
@@ -50,18 +50,18 @@ export const usersRepository = {
         // );
 
         return result.matchedCount === 1;
-    },
+    }
 
     async updateConfirmationCode(userId: ObjectId, code: string): Promise<void> {
         await userCollection.updateOne(
             { _id: userId },
             { $set: { 'emailConfirmation.confirmationCode': code } }
         );
-    },
+    }
 
     async deleteUser(id: string): Promise<boolean> {
         const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
 
         return result.deletedCount === 1;
     }
-};
+}

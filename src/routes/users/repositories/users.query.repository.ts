@@ -6,7 +6,10 @@ import { UsersSearchParams } from '../types/transaction.types';
 import { SortDirection } from '../../../core/types/sorting.types';
 import { OutputDto } from '../../../core/types/dto.types';
 
-export const usersQueryRepository = {
+export class UsersQueryRepository {
+    private _convertUserData = convertUserData;
+    private _mapToUserOutput = mapToUserOutput;
+
     async getUserById(id: string): Promise<UserOutputDto | null> {
         const user = await userCollection.findOne({ _id: new ObjectId(id) });
 
@@ -15,7 +18,7 @@ export const usersQueryRepository = {
         }
 
         return this._convertUserData(user);
-    },
+    }
 
     async getUsers(queryParams: UsersSearchParams): Promise<OutputDto<UserOutputDto>> {
         const { pageNumber, pageSize, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } =
@@ -45,8 +48,5 @@ export const usersQueryRepository = {
         const totalCount = await userCollection.countDocuments(filter);
 
         return this._mapToUserOutput({ items: users, totalCount }, { pageNumber, pageSize });
-    },
-
-    _convertUserData: convertUserData,
-    _mapToUserOutput: mapToUserOutput
-};
+    }
+}

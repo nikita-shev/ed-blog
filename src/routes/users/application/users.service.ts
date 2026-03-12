@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { UserInputDto } from '../dto/users.dto';
-import { usersRepository } from '../repositories/users.repository';
+import { UsersRepository } from '../repositories/users.repository';
 import { Error } from '../../../core/types/error.types';
 import { User, UserWithoutPassword } from '../types/users.types';
 import { add, isPast, parseISO } from 'date-fns';
@@ -13,10 +13,12 @@ import {
 import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { convertFullUserInfo } from '../routers/mappers/mapToUserOutput';
 
-export const usersService = {
+export class UsersService {
+    constructor(private usersRepository: UsersRepository) {}
+
     async createUser(credentials: UserInputDto): Promise<Error | string> {
-        const isUniqueLogin = await usersRepository.findUserByLogin(credentials.login);
-        const isUniqueEmail = await usersRepository.findUserByEmail(credentials.email);
+        const isUniqueLogin = await this.usersRepository.findUserByLogin(credentials.login);
+        const isUniqueEmail = await this.usersRepository.findUserByEmail(credentials.email);
         // TODO: одним запросом, испр. ошибку
         if (isUniqueLogin || isUniqueEmail) {
             const field = isUniqueLogin ? 'login' : 'email';
@@ -37,20 +39,20 @@ export const usersService = {
             }
         };
 
-        return await usersRepository.createUser(newUser);
-    },
+        return await this.usersRepository.createUser(newUser);
+    }
 
     async getUserInfo(userId: string): Promise<ServiceDto<UserWithoutPassword> | ServiceDto<null>> {
-        const result = await usersRepository.findUserById(userId);
+        const result = await this.usersRepository.findUserById(userId);
 
         // if (!result) return createResultObject(null, ResultStatus.NotFound);
         if (!result) return notFoundResult.create();
         // return createResultObject(convertFullUserInfo(result));
         return successResult.create(convertFullUserInfo(result));
-    },
+    }
 
     async confirmUser(code: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
-        const userInfo = await usersRepository.findUserByConfirmationCode(code);
+        const userInfo = await this.usersRepository.findUserByConfirmationCode(code);
         if (!userInfo)
             // return createResultObject(userInfo, ResultStatus.BadRequest, 'Bad Request', [
             //     { field: 'code', message: 'Code is invalid' }
@@ -71,14 +73,14 @@ export const usersService = {
         }
 
         // return await usersRepository.confirmUser(userInfo._id);
-        const isConfirmUser = await usersRepository.confirmUser(userInfo._id);
+        const isConfirmUser = await this.usersRepository.confirmUser(userInfo._id);
 
         return isConfirmUser
             ? noContentResult.create(isConfirmUser)
             : badRequestResult.create(isConfirmUser, 'Bad Request');
-    },
+    }
 
     async deleteUser(id: string): Promise<boolean> {
-        return usersRepository.deleteUser(id);
+        return this.usersRepository.deleteUser(id);
     }
-};
+}

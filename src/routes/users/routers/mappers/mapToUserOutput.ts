@@ -25,6 +25,17 @@ export function convertFullUserInfo(user: WithId<User>): UserWithoutPassword {
     };
 }
 
+// TODO: rename,
+// export function convertUserWithoutId(user: WithId<User>): User {
+//     return {
+//         login: user.login,
+//         email: user.email,
+//         createdAt: user.createdAt,
+//         password: user.password,
+//         emailConfirmation: user.emailConfirmation
+//     };
+// }
+
 // TODO: duplicate, move to 'core'
 export function mapToUserOutput(
     data: SearchResult<UserWithId>,

@@ -64,4 +64,13 @@ export class UsersRepository {
 
         return result.deletedCount === 1;
     }
+
+    async createPasswordCode(id: string, code: string): Promise<boolean> {
+        const result = await userCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { passwordRecoveryCode: code } }
+        );
+
+        return result.matchedCount === 1;
+    }
 }

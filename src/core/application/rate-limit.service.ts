@@ -64,7 +64,8 @@ class RateLimitRepo {
             login: 10,
             registration: 13,
             'registration-email-resending': 10,
-            'registration-confirmation': 10
+            'registration-confirmation': 10,
+            'password-recovery': 10
         };
         const path = url.split('/').reverse()[0];
 

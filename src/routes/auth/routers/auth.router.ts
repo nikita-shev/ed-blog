@@ -50,6 +50,14 @@ authRouter
         checkRefreshTokenMiddleware,
         authController.replaceRefreshToken.bind(authController)
     )
-    .post('/logout', checkRefreshTokenMiddleware, authController.logout.bind(authController));
+    .post('/logout', checkRefreshTokenMiddleware, authController.logout.bind(authController))
+    .post(
+        '/password-recovery',
+        authRateLimitReedMiddleware,
+        authRateLimitWriteMiddleware,
+        emailValidation,
+        inputValidationResultMiddleware,
+        authController.passwordRecovery.bind(authController)
+    );
 
 // TODO: вынести "path" в enam

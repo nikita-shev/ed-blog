@@ -19,16 +19,16 @@ import { AuthRepository } from './routes/auth/repositories/auth.repository';
 import { AuthService } from './routes/auth/application/auth.service';
 import { AuthController } from './routes/auth/controller/auth.controller';
 
-// auth
-export const authRepository = new AuthRepository(); // delete export
-export const authService = new AuthService(authRepository); // TODO: используется в middleware
-export const authController = new AuthController(authService);
-
 // users
 export const usersRepository = new UsersRepository(); // delete export
 const usersQueryRepository = new UsersQueryRepository();
 export const usersService = new UsersService(usersRepository); // use for tests
 export const usersController = new UsersController(usersService, usersQueryRepository);
+
+// auth
+export const authRepository = new AuthRepository(); // delete export
+export const authService = new AuthService(authRepository, usersService); // TODO: используется в middleware
+export const authController = new AuthController(authService);
 
 // devices(securityDevices)
 const securityDevicesRepository = new SecurityDevicesRepository();

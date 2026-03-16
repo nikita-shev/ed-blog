@@ -12,6 +12,7 @@ import {
 } from '../../../core/utils/result-object';
 import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { convertFullUserInfo } from '../routers/mappers/mapToUserOutput';
+import { WithId } from 'mongodb';
 
 export class UsersService {
     constructor(private usersRepository: UsersRepository) {}
@@ -51,6 +52,15 @@ export class UsersService {
         return successResult.create(convertFullUserInfo(result));
     }
 
+    // TODO: заменить в authService => checkUser()
+    async getUserByLoginOrEmail(data: string): Promise<ServiceDto<WithId<User> | null>> {
+        const user = await this.usersRepository.findUser(data);
+
+        if (!user) return notFoundResult.create();
+
+        return successResult.create(user);
+    }
+
     async confirmUser(code: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
         const userInfo = await this.usersRepository.findUserByConfirmationCode(code);
         if (!userInfo)
@@ -82,5 +92,12 @@ export class UsersService {
 
     async deleteUser(id: string): Promise<boolean> {
         return this.usersRepository.deleteUser(id);
+    }
+
+    async createPasswordCode(id: string): Promise<ServiceDto<string>> {
+        const code = crypto.randomUUID();
+        await this.usersRepository.createPasswordCode(id, code); // TODO: обработать возврат или вернуть код???
+
+        return successResult.create(code);
     }
 }

@@ -127,4 +127,11 @@ export class AuthController {
 
         res.sendStatus(status);
     }
+
+    async passwordRecovery(req: Request<{}, {}, { email: string }>, res: Response) {
+        const result = await this.authService.passwordRecovery(req.body.email);
+        const status = resultCodeToHttpException(result.status);
+
+        res.sendStatus(status);
+    }
 }

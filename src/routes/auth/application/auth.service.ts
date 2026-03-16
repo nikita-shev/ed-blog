@@ -19,12 +19,16 @@ import {
     ServiceDto
 } from '../../../core/utils/result-object/types/result-object.types';
 import { CurrentUser, ServiceInfo } from '../types/auth.types';
-import { createMessage, emailAdapter } from '../../../adapters/email-adapter';
+import { messagesForEmail, emailAdapter } from '../../../adapters/email-adapter';
 import { UserSessionData } from '../types/sessions.types';
 import { AuthRepository } from '../repositories/auth.repository';
+import { UsersService } from '../../users/application/users.service';
 
 export class AuthService {
-    constructor(private authRepository: AuthRepository) {}
+    constructor(
+        private authRepository: AuthRepository,
+        private usersService: UsersService
+    ) {}
 
     // TODO: rename "checkUser"
     async checkUser(
@@ -46,7 +50,11 @@ export class AuthService {
         const userDevice = serviceInfo?.device ?? '';
         const userIp = serviceInfo?.ip ?? '';
 
-        const lastSession = await this.authRepository.findSessionByDevice(userId, userDevice, userIp);
+        const lastSession = await this.authRepository.findSessionByDevice(
+            userId,
+            userDevice,
+            userIp
+        );
 
         if (lastSession) {
             const { deviceId } = lastSession;
@@ -130,7 +138,7 @@ export class AuthService {
         const emailSendingStatus = await emailAdapter.sendEmail(
             userInfo.data.email,
             'register',
-            createMessage(userInfo.data.emailConfirmation.confirmationCode)
+            messagesForEmail.completeRegistration(userInfo.data.emailConfirmation.confirmationCode)
         );
 
         if (!emailSendingStatus.data) {
@@ -183,7 +191,7 @@ export class AuthService {
         const emailSendingStatus = await emailAdapter.sendEmail(
             user.email,
             'resend',
-            createMessage(newCode)
+            messagesForEmail.completeRegistration(newCode)
         );
         if (!emailSendingStatus.data) {
             // TODO: как такое тестировать, когда есть мока?
@@ -253,6 +261,25 @@ export class AuthService {
             accessToken: accessToken.data,
             refreshToken: refreshToken.data
         });
+    }
+
+    async passwordRecovery(email: string): Promise<ServiceDto<boolean>> {
+        const userInfo = await this.usersService.getUserByLoginOrEmail(email);
+
+        if (!userInfo.data) return noContentResult.create();
+
+        const { data: code } = await this.usersService.createPasswordCode(
+            userInfo.data._id.toString()
+        );
+
+        // TODO: необходимо удалять код, если email сломался?
+        const emailSendingStatus = await emailAdapter.sendEmail(
+            userInfo.data.email,
+            'Password recovery',
+            messagesForEmail.passwordRecovery(code)
+        );
+
+        return noContentResult.create(emailSendingStatus.data); // emailSendingStatus.data - не обязательно, можно просто true
     }
 }
 

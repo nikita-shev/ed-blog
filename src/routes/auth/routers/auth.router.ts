@@ -10,6 +10,8 @@ import { userInputDtoValidation } from '../../users/middlewares/validation/input
 import { emailValidation } from '../../users/middlewares/validation/input-dto-validation/modules/email.validation';
 import { checkRefreshTokenMiddleware } from '../middlewares/authorizations/check-refresh-token.middleware';
 import { authController } from '../../../composition-root';
+import { newPasswordValidation } from '../middlewares/validation/input-dto-validation/fields/password.validation';
+import { recoveryCodeValidation } from '../middlewares/validation/input-dto-validation/fields/recoveryCode.validation';
 
 export const authRouter = Router();
 
@@ -58,6 +60,15 @@ authRouter
         emailValidation,
         inputValidationResultMiddleware,
         authController.passwordRecovery.bind(authController)
-    );
+    )
+    .post(
+        '/new-password',
+        authRateLimitReedMiddleware,
+        authRateLimitWriteMiddleware,
+        newPasswordValidation,
+        recoveryCodeValidation,
+        inputValidationResultMiddleware,
+        authController.createNewPassword.bind(authController)
+    ); // TODO: newPasswordValidation + recoveryCodeValidation объединить в массив валидаций
 
 // TODO: вынести "path" в enam

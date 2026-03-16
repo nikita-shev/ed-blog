@@ -134,4 +134,17 @@ export class AuthController {
 
         res.sendStatus(status);
     }
+
+    async createNewPassword(
+        req: Request<{}, {}, { newPassword: string; recoveryCode: string }>,
+        res: Response
+    ) {
+        const result = await this.authService.createNewPassword(
+            req.body.newPassword,
+            req.body.recoveryCode
+        );
+        const status = resultCodeToHttpException(result.status);
+
+        res.sendStatus(status);
+    }
 }

@@ -1,5 +1,5 @@
 import { userCollection } from '../../../db/db.config';
-import { User } from '../types/users.types';
+import { PasswordRecovery, User } from '../types/users.types';
 import { ObjectId, WithId } from 'mongodb';
 
 export class UsersRepository {
@@ -20,6 +20,7 @@ export class UsersRepository {
         return Boolean(user);
     }
 
+    // TODO: есть findUser() => поиск и по логину и по email
     async findUserByEmail(email: string): Promise<boolean> {
         const user = await userCollection.findOne({ email });
 
@@ -28,6 +29,10 @@ export class UsersRepository {
 
     async findUserByConfirmationCode(code: string): Promise<WithId<User> | null> {
         return userCollection.findOne({ 'emailConfirmation.confirmationCode': code });
+    }
+    //TODO: findUserByConfirmationCode => findUserByCode. как универсальное решение
+    async findUserByCode(type: string, code: string): Promise<WithId<User> | null> {
+        return userCollection.findOne({ [type]: code });
     }
 
     async createUser(credentials: User): Promise<string> {
@@ -65,10 +70,32 @@ export class UsersRepository {
         return result.deletedCount === 1;
     }
 
-    async createPasswordCode(id: string, code: string): Promise<boolean> {
+    async createPasswordCode(userId: string, passwordRecovery: PasswordRecovery): Promise<boolean> {
         const result = await userCollection.updateOne(
-            { _id: new ObjectId(id) },
-            { $set: { passwordRecoveryCode: code } }
+            { _id: new ObjectId(userId) },
+            { $set: { passwordRecovery } }
+        );
+
+        return result.matchedCount === 1;
+    }
+
+    async updatePassword(userId: string, newPassword: string): Promise<boolean> {
+        const result = await userCollection.updateOne(
+            { _id: new ObjectId(userId) },
+            {
+                $set: {
+                    password: newPassword
+                }
+            }
+        );
+
+        return result.matchedCount === 1;
+    }
+
+    async deleteRecoveryCode(userId: string): Promise<boolean> {
+        const result = await userCollection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $unset: { passwordRecovery: '' } }
         );
 
         return result.matchedCount === 1;

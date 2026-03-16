@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { UserInputDto } from '../dto/users.dto';
 import { UsersRepository } from '../repositories/users.repository';
 import { Error } from '../../../core/types/error.types';
-import { User, UserWithoutPassword } from '../types/users.types';
+import { PasswordRecovery, User, UserWithoutPassword } from '../types/users.types';
 import { add, isPast, parseISO } from 'date-fns';
 import {
     badRequestResult,
@@ -95,9 +95,30 @@ export class UsersService {
     }
 
     async createPasswordCode(id: string): Promise<ServiceDto<string>> {
-        const code = crypto.randomUUID();
-        await this.usersRepository.createPasswordCode(id, code); // TODO: обработать возврат или вернуть код???
+        const passwordRecovery: PasswordRecovery = {
+            code: crypto.randomUUID(),
+            expirationDate: add(new Date(), { hours: 1 }).toISOString() // TODO: fix date
+        };
+        await this.usersRepository.createPasswordCode(id, passwordRecovery); // TODO: обработать возврат или вернуть код???
 
-        return successResult.create(code);
+        return successResult.create(passwordRecovery.code);
+    }
+
+    async getUserByCode(type: string, code: string): Promise<ServiceDto<WithId<User> | null>> {
+        const user = await this.usersRepository.findUserByCode(type, code);
+
+        return user ? successResult.create(user) : notFoundResult.create();
+    }
+
+    async updatePassword(userId: string, newPassword: string): Promise<ServiceDto<boolean>> {
+        const result = await this.usersRepository.updatePassword(userId, newPassword);
+
+        return successResult.create(result);
+    }
+
+    async deleteRecoveryCode(userId: string): Promise<any> {
+        const result = await this.usersRepository.deleteRecoveryCode(userId);
+
+        return successResult.create(result);
     }
 }

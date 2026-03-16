@@ -9,6 +9,7 @@ export interface User extends BasicUser {
     password: string;
     createdAt: string;
     emailConfirmation: EmailConfirmation;
+    passwordRecovery?: PasswordRecovery;
 }
 
 export type UserWithoutPassword = Omit<User, 'password'>;
@@ -27,6 +28,11 @@ interface EmailConfirmation {
     confirmationCode: string;
     expirationDate: string;
     isConfirmed: boolean;
+}
+
+export interface PasswordRecovery {
+    code: string;
+    expirationDate: string;
 }
 
 // TODO: исправить название и переделать старые типы на новые

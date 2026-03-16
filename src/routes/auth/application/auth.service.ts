@@ -281,6 +281,29 @@ export class AuthService {
 
         return noContentResult.create(emailSendingStatus.data); // emailSendingStatus.data - не обязательно, можно просто true
     }
+
+    async createNewPassword(newPassword: string, recoveryCode: string): Promise<any> {
+        const userSearchResult = await this.usersService.getUserByCode(
+            'passwordRecovery.code',
+            recoveryCode
+        );
+
+        if (!userSearchResult.data) return badRequestResult.create(null, 'Bad request');
+
+        const expirationDate = userSearchResult.data.passwordRecovery?.expirationDate;
+        if (expirationDate && new Date(expirationDate) < new Date()) {
+            return badRequestResult.create(null, 'Bad request');
+        }
+
+        const userId = userSearchResult.data._id.toString();
+        const hashPassword = await bcrypt.hash(newPassword, 12); // TODO: в отдельный сервис во всех местах
+        const passwordUpdateResult = await this.usersService.updatePassword(userId, hashPassword);
+        if (!passwordUpdateResult.data) return badRequestResult.create(null, 'Bad request');
+
+        await this.usersService.deleteRecoveryCode(userId);
+
+        return noContentResult.create();
+    }
 }
 
 // TODO: Возможно дублируется логика в replaceRefreshToken() и checkUser() (блок lastSession)

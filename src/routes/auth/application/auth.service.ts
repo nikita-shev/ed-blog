@@ -266,6 +266,8 @@ export class AuthService {
     async passwordRecovery(email: string): Promise<ServiceDto<boolean>> {
         const userInfo = await this.usersService.getUserByLoginOrEmail(email);
 
+        console.log(email, userInfo.data); // TODO: delete
+
         if (!userInfo.data) return noContentResult.create();
 
         const { data: code } = await this.usersService.createPasswordCode(
@@ -282,13 +284,16 @@ export class AuthService {
         return noContentResult.create(emailSendingStatus.data); // emailSendingStatus.data - не обязательно, можно просто true
     }
 
-    async createNewPassword(newPassword: string, recoveryCode: string): Promise<any> {
+    async createNewPassword(newPassword: string, recoveryCode: string): Promise<ServiceDto> {
         const userSearchResult = await this.usersService.getUserByCode(
             'passwordRecovery.code',
             recoveryCode
         );
 
-        if (!userSearchResult.data) return badRequestResult.create(null, 'Bad request');
+        if (!userSearchResult.data)
+            return badRequestResult.create(null, 'Bad request', [
+                { field: 'recoveryCode', message: 'recoveryCode is incorrect.' }
+            ]);
 
         const expirationDate = userSearchResult.data.passwordRecovery?.expirationDate;
         if (expirationDate && new Date(expirationDate) < new Date()) {

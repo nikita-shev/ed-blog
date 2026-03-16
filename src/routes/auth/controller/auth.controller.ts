@@ -145,6 +145,10 @@ export class AuthController {
         );
         const status = resultCodeToHttpException(result.status);
 
+        if (result.extensions.length !== 0) {
+            return res.status(status).send({ errorsMessages: result.extensions });
+        }
+
         res.sendStatus(status);
     }
 }

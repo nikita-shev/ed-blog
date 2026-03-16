@@ -1,23 +1,23 @@
 import { UsersRepository } from './routes/users/repositories/users.repository';
 import { UsersQueryRepository } from './routes/users/repositories/users.query.repository';
 import { UsersService } from './routes/users/application/users.service';
-import { UsersController } from './routes/users/routers/users.router';
+import { UsersController } from './routes/users/controller/users.controller';
 import { SecurityDevicesRepository } from './routes/securityDevices/repositories/security-devices.repository';
 import { SecurityDevicesService } from './routes/securityDevices/application/security-devices.service';
-import { SecurityDevicesController } from './routes/securityDevices/routers/security-devices.router';
+import { SecurityDevicesController } from './routes/securityDevices/controller/security-devices.controller';
 import { PostsRepository } from './routes/posts/repositories/posts.repository';
 import { PostsService } from './routes/posts/application/posts.service';
-import { PostsController } from './routes/posts/routers/posts.router';
+import { PostsController } from './routes/posts/controller/posts.controller';
 import { CommentQueryRepository } from './routes/comments/repositories/comment.query.repository';
 import { CommentRepository } from './routes/comments/repositories/comment.repository';
 import { CommentsService } from './routes/comments/application/comments.service';
-import { CommentsController } from './routes/comments/routers/comments.router';
+import { CommentsController } from './routes/comments/controller/comments.controller';
 import { BlogsRepository } from './routes/blogs/repositories/blogs.repository';
 import { BlogsService } from './routes/blogs/application/blogs.service';
-import { BlogsController } from './routes/blogs/routers/blogs.router';
+import { BlogsController } from './routes/blogs/controller/blogs.controller';
 import { AuthRepository } from './routes/auth/repositories/auth.repository';
 import { AuthService } from './routes/auth/application/auth.service';
-import { AuthController } from './routes/auth/routers/auth.router';
+import { AuthController } from './routes/auth/controller/auth.controller';
 
 // auth
 export const authRepository = new AuthRepository(); // delete export

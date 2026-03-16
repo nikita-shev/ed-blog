@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { setupApp } from './setup-app';
 import { runDB } from './db/db.config';

@@ -1,13 +1,10 @@
 import { Collection, MongoClient } from 'mongodb';
-import dotenv from 'dotenv';
 import { Blog } from '../routes/blogs/types/blog.types';
 import { Post } from '../routes/posts/types/posts.types';
 import { User } from '../routes/users/types/users.types';
 import { Comment } from '../routes/comments/types/comments.types';
 import { Session } from '../routes/auth/types/sessions.types';
 import { RateLimitDto } from '../core/application/rate-limit.service';
-
-dotenv.config();
 
 const mongoURL = process.env.MONGO_URL;
 

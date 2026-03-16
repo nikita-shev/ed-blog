@@ -285,6 +285,8 @@ export class AuthService {
     }
 
     async createNewPassword(newPassword: string, recoveryCode: string): Promise<ServiceDto> {
+        console.log(newPassword, recoveryCode); // TODO: delete
+
         const userSearchResult = await this.usersService.getUserByCode(
             'passwordRecovery.code',
             recoveryCode

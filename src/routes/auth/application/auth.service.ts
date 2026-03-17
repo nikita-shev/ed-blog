@@ -35,7 +35,7 @@ export class AuthService {
         credentials: AuthInputDto,
         serviceInfo?: ServiceInfo
     ): NullableServiceDto<AuthorizationTokens> {
-        // console.log(credentials, serviceInfo);
+        console.log(credentials, serviceInfo); // TODO: delete
 
         const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: repo or service?
         // if (!userData) return createResultObject(null, ResultStatus.Unauthorized);

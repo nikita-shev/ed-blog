@@ -32,7 +32,7 @@ authRouter
         userInputDtoValidation,
         inputValidationResultMiddleware,
         authController.registrationUser.bind(authController)
-    ) // TODO: так можно (userInputDtoValidation в authRouter)?
+    ) // TODO: userInputDtoValidation в authRouter?
     .post(
         '/registration-confirmation',
         authRateLimitReedMiddleware,
@@ -69,6 +69,6 @@ authRouter
         recoveryCodeValidation,
         inputValidationResultMiddleware,
         authController.createNewPassword.bind(authController)
-    ); // TODO: newPasswordValidation + recoveryCodeValidation объединить в массив валидаций
+    ); // TODO: newPasswordValidation + recoveryCodeValidation - merge into validation array
 
-// TODO: вынести "path" в enam
+// TODO: "path" -> enum

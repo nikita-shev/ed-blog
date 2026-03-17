@@ -20,7 +20,7 @@ export class UsersRepository {
         return Boolean(user);
     }
 
-    // TODO: есть findUser() => поиск и по логину и по email
+    // TODO: findUser() => поиск и по логину, и по email
     async findUserByEmail(email: string): Promise<boolean> {
         const user = await userCollection.findOne({ email });
 
@@ -30,7 +30,7 @@ export class UsersRepository {
     async findUserByConfirmationCode(code: string): Promise<WithId<User> | null> {
         return userCollection.findOne({ 'emailConfirmation.confirmationCode': code });
     }
-    //TODO: findUserByConfirmationCode => findUserByCode. как универсальное решение
+    //TODO: findUserByConfirmationCode => findUserByCode. как общее решение
     async findUserByCode(type: string, code: string): Promise<WithId<User> | null> {
         return userCollection.findOne({ [type]: code });
     }

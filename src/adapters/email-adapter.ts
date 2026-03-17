@@ -91,13 +91,13 @@ export const emailAdapter = {
             return successResult.create(true);
         } catch (e) {
             console.log(e);
-            // return createResultObject(false, ResultStatus.BadRequest); // TODO: добавить текст ошибки
-            return badRequestResult.create(false, 'Bad Request'); // TODO: добавить текст ошибки
+            // return createResultObject(false, ResultStatus.BadRequest);
+            return badRequestResult.create(false, 'Bad Request'); // TODO: Add error text
         }
     }
 };
 
-// TODO:move, rename
+// TODO: move, rename
 // export function createMessage(code: string): string {
 //     return `<div>
 //                 <h1>Thank for your registration</h1>

@@ -37,7 +37,7 @@ export class AuthService {
     ): NullableServiceDto<AuthorizationTokens> {
         // console.log(credentials, serviceInfo);
 
-        const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: так можно использовать или нужен сервис
+        const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: repo or service?
         // if (!userData) return createResultObject(null, ResultStatus.Unauthorized);
         if (!userData) return unauthorizedResult.create();
 
@@ -94,7 +94,7 @@ export class AuthService {
             iat: new Date(payload.data.iat).toISOString(),
             exp: new Date(payload.data.exp).toISOString()
         };
-        await this.authRepository.addUserSession({ ...payload.data, ...d }); // TODO: делать проверку, что всё ок???
+        await this.authRepository.addUserSession({ ...payload.data, ...d }); // TODO: Check if everything is completed?
 
         // return createResultObject({
         //     accessToken: accessToken.data,
@@ -163,10 +163,10 @@ export class AuthService {
         const user = await usersRepository.findUser(email);
         if (!user)
             // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
-            //     { field: 'email', message: 'email not found' } // TODO: дубликат
+            //     { field: 'email', message: 'email not found' }
             // ]);
             return badRequestResult.create(null, 'Bad request', [
-                { field: 'email', message: 'email not found' } // TODO: дубликат
+                { field: 'email', message: 'email not found' } // TODO: duplicate
             ]);
 
         const { emailConfirmation } = user;
@@ -236,7 +236,7 @@ export class AuthService {
     }
 
     async replaceRefreshToken(
-        userId: string, // TODO: нужен?
+        userId: string, // TODO: need?
         token: RefreshToken
     ): NullableServiceDto<AuthorizationTokens> {
         const { data } = jwtService.decode<RefreshTokenPayload>(token);
@@ -303,7 +303,7 @@ export class AuthService {
         }
 
         const userId = userSearchResult.data._id.toString();
-        const hashPassword = await bcrypt.hash(newPassword, 12); // TODO: в отдельный сервис во всех местах
+        const hashPassword = await bcrypt.hash(newPassword, 12); // TODO: to service
         const passwordUpdateResult = await this.usersService.updatePassword(userId, hashPassword);
         if (!passwordUpdateResult.data) return badRequestResult.create(null, 'Bad request');
 
@@ -314,7 +314,7 @@ export class AuthService {
 }
 
 // TODO: Возможно дублируется логика в replaceRefreshToken() и checkUser() (блок lastSession)
-// TODO: Логика формирования jwt в методах replaceRefreshToken и checkUser дублируется. Исрпавить.
+// TODO: Логика формирования jwt в методах replaceRefreshToken и checkUser дублируется. Исправить.
 
 // TODO: move
 export interface RefreshTokenPayload {

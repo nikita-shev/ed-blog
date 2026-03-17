@@ -88,7 +88,7 @@ export class AuthController {
 
     async replaceRefreshToken(req: Request, res: Response<TokenOutputDto>) {
         const userId = req.appContext.userId as string;
-        // TODO: типизация для req.cookies.refreshToken. как?
+        // TODO: types for req.cookies.refreshToken. how?
         const result = await this.authService.replaceRefreshToken(userId, req.cookies.refreshToken);
         const status = resultCodeToHttpException(result.status);
 

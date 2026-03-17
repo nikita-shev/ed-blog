@@ -2,7 +2,6 @@ import { sessionsCollection } from '../../../db/db.config';
 import { SessionWithId, UserSessionData } from '../types/sessions.types';
 import { RefreshTokenPayload } from '../application/auth.service';
 
-// TODO: вынести работу с черным списком в отдельный сервис/репозиторий
 export class AuthRepository {
     async addUserSession(data: UserSessionData): Promise<boolean> {
         const result = await sessionsCollection.insertOne(data);
@@ -50,6 +49,6 @@ export class AuthRepository {
     async deleteSession(deviceId: string): Promise<boolean> {
         const result = await sessionsCollection.deleteOne({ deviceId });
 
-        return result.deletedCount === 1; // TODO: нужен try{}catch при работе с БД?
+        return result.deletedCount === 1;
     }
 }

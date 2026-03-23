@@ -9,14 +9,17 @@ import {
 import { userInputDtoValidation } from '../../users/middlewares/validation/input-dto-validation';
 import { emailValidation } from '../../users/middlewares/validation/input-dto-validation/modules/email.validation';
 import { checkRefreshTokenMiddleware } from '../middlewares/authorizations/check-refresh-token.middleware';
-import { authController } from '../../../composition-root';
 import { newPasswordValidation } from '../middlewares/validation/input-dto-validation/fields/password.validation';
 import { recoveryCodeValidation } from '../middlewares/validation/input-dto-validation/fields/recoveryCode.validation';
+import { container } from '../../../composition-root';
+import { AuthController } from '../controller/auth.controller';
 
 export const authRouter = Router();
+const authController = container.get(AuthController);
 
 authRouter
-    .get('/me', authBearerMiddleware, authController.getInfoAboutUser.bind(authController))
+    .get('/me',
+         authBearerMiddleware, authController.getInfoAboutUser.bind(authController))
     .post(
         '/login',
         authRateLimitReedMiddleware,

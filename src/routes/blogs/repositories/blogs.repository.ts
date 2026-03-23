@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId, Sort } from 'mongodb';
 import { Blog, BlogWithId } from '../types/blog.types';
 import { BlogInputDto } from '../dto';
@@ -6,6 +7,7 @@ import { SearchResult } from '../../../core/types/dto.types';
 import { BlogsSearchParams } from '../types/transaction.types';
 import { SortDirection } from '../../../core/types/sorting.types';
 
+@injectable()
 export class BlogsRepository {
     async findBlogs(params: BlogsSearchParams): Promise<SearchResult<BlogWithId>> {
         const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm } = params;

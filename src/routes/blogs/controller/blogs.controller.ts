@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { BlogsService } from '../application/blogs.service';
 import { Request, Response } from 'express';
 import { BlogInputDto, BlogOutputDto } from '../dto';
@@ -11,8 +12,9 @@ import { matchedData } from 'express-validator';
 import { PostsSearchParams } from '../../posts/types/transaction.types';
 import { OutputDto } from '../../../core/types/dto.types';
 
+@injectable()
 export class BlogsController {
-    constructor(private blogsService: BlogsService) {}
+    constructor(@inject(BlogsService) private blogsService: BlogsService) {}
 
     async createBlog(req: Request<{}, {}, BlogInputDto>, res: Response<BlogOutputDto>) {
         const newBlog = await this.blogsService.createBlog(req.body);

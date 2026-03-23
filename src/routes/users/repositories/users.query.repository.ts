@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { userCollection } from '../../../db/db.config';
 import { convertUserData, mapToUserOutput } from '../routers/mappers/mapToUserOutput';
 import { ObjectId, Sort } from 'mongodb';
@@ -6,6 +7,7 @@ import { UsersSearchParams } from '../types/transaction.types';
 import { SortDirection } from '../../../core/types/sorting.types';
 import { OutputDto } from '../../../core/types/dto.types';
 
+@injectable()
 export class UsersQueryRepository {
     private _convertUserData = convertUserData;
     private _mapToUserOutput = mapToUserOutput;

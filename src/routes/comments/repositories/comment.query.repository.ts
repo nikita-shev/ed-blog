@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { Sort } from 'mongodb';
 import { commentCollection } from '../../../db/db.config';
 import { convertCommentData, mapToCommentOutput } from '../routers/mappers/mapToCommentOutput';
@@ -6,6 +7,7 @@ import { CommentsSearchParams } from '../types/transaction.types';
 import { OutputDto } from '../../../core/types/dto.types';
 import { CommentOutputDto } from '../dto/comment.dto';
 
+@injectable()
 export class CommentQueryRepository {
     private _convertCommentData = convertCommentData;
     private _mapToCommentOutput = mapToCommentOutput;

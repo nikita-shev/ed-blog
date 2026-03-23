@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { PostsRepository } from '../repositories/posts.repository';
 import { Post, PostWithId } from '../types/posts.types';
 import { PostInputDto } from '../dto';
@@ -10,10 +11,11 @@ import { Comment, CommentatorInfo, CommentWithId } from '../../comments/types/co
 import { CommentOutputDto } from '../../comments/dto/comment.dto';
 import { CommentRepository } from '../../comments/repositories/comment.repository';
 
+@injectable()
 export class PostsService {
     constructor(
-        private postsRepository: PostsRepository,
-        private commentRepository: CommentRepository
+        @inject(PostsRepository) private postsRepository: PostsRepository,
+        @inject(CommentRepository) private commentRepository: CommentRepository
     ) {}
 
     async findPosts(

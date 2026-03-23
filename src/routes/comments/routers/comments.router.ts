@@ -3,9 +3,11 @@ import { validateId } from '../../../core/validation/id-validation';
 import { inputValidationResultMiddleware } from '../../../core/middlewares/validation/input-validtion-result.middleware';
 import { authBearerMiddleware } from '../../../core/middlewares/auth.middleware';
 import { commentInputDtoValidation } from '../../posts/middlewares/validation/input-dto-validation';
-import { commentsController } from '../../../composition-root';
+import { container } from '../../../composition-root';
+import { CommentsController } from '../controller/comments.controller';
 
 export const commentsRouter = Router();
+const commentsController = container.get(CommentsController);
 
 commentsRouter
     .get(

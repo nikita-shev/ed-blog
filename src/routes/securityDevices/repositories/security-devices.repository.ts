@@ -1,6 +1,8 @@
+import { injectable } from 'inversify';
 import { SessionWithId } from '../../auth/types/sessions.types';
 import { sessionsCollection } from '../../../db/db.config';
 
+@injectable()
 export class SecurityDevicesRepository {
     // TODO: findActiveDevices -> queryRepo ???
     async findActiveDevices(userId: string): Promise<SessionWithId[]> {

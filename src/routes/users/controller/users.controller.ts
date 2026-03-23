@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepository } from '../repositories/users.query.repository';
 import { Request, Response } from 'express';
@@ -7,10 +8,11 @@ import { HttpStatus } from '../../../core/constants/http-statuses';
 import { RequestQuery, ResponseBody, UsersSearchParams } from '../types/transaction.types';
 import { matchedData } from 'express-validator';
 
+@injectable()
 export class UsersController {
     constructor(
-        private usersService: UsersService,
-        private usersQueryRepository: UsersQueryRepository
+        @inject(UsersService) private usersService: UsersService,
+        @inject(UsersQueryRepository) private usersQueryRepository: UsersQueryRepository
     ) {}
 
     async createUser(

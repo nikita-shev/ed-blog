@@ -4,9 +4,11 @@ import { userInputDtoValidation } from '../middlewares/validation/input-dto-vali
 import { authMiddleware } from '../../../core/middlewares/auth.middleware';
 import { idValidation } from '../../../core/validation/id-validation';
 import { usersQueryValidation } from '../middlewares/validation/query-params-validation';
-import { usersController } from '../../../composition-root';
+import { container } from '../../../composition-root';
+import { UsersController } from '../controller/users.controller';
 
 export const usersRouter = Router();
+const usersController = container.get(UsersController);
 
 // TODO: fix "@ts-ignore"
 usersRouter

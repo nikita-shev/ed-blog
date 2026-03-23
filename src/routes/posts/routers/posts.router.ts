@@ -7,9 +7,11 @@ import { queryValidationMiddlewares2 } from '../../blogs/middlewares/validation/
 import { commentInputDtoValidation } from '../middlewares/validation/input-dto-validation';
 import { PostSortFields } from '../types/sorting.types';
 import { CommentSortFields } from '../../comments/types/sorting.types';
-import { postsController } from '../../../composition-root';
+import { container } from '../../../composition-root';
+import { PostsController } from '../controller/posts.controller';
 
 export const postsRouter = Router();
+const postsController = container.get(PostsController);
 
 postsRouter
     .get(

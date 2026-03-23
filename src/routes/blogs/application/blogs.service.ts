@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { Blog, BlogWithId } from '../types/blog.types';
 import { SearchResult } from '../../../core/types/dto.types';
 import { BlogsSearchParams } from '../types/transaction.types';
@@ -8,10 +9,11 @@ import { PostsSearchParams } from '../../posts/types/transaction.types';
 import { BlogsRepository } from '../repositories/blogs.repository';
 import { PostsService } from '../../posts/application/posts.service';
 
+@injectable()
 export class BlogsService {
     constructor(
-        private blogsRepository: BlogsRepository,
-        private postsService: PostsService
+        @inject(BlogsRepository) private blogsRepository: BlogsRepository,
+        @inject(PostsService) private postsService: PostsService
     ) {}
 
     async getBlogs(params: BlogsSearchParams): Promise<SearchResult<BlogWithId>> {

@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { CommentRepository } from '../repositories/comment.repository';
 import { convertCommentData } from '../routers/mappers/mapToCommentOutput';
 import {
@@ -9,8 +10,9 @@ import {
 import { NullableServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { CommentInputDto, CommentOutputDto } from '../dto/comment.dto';
 
+@injectable()
 export class CommentsService {
-    constructor(private commentRepository: CommentRepository) {}
+    constructor(@inject(CommentRepository) private commentRepository: CommentRepository) {}
 
     async getCommentById(id: string): NullableServiceDto<CommentOutputDto> {
         const foundComment = await this.commentRepository.getCommentById(id);

@@ -1,4 +1,4 @@
-import { BlogInputDto } from '../../../src/blogs/dto';
+import { BlogInputDto } from '../../../src/routes/blogs/dto';
 
 // Authorization
 export const authorizationData = 'Basic YWRtaW46cXdlcnR5';

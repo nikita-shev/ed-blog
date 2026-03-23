@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { PostsService } from '../application/posts.service';
 import { AuthService } from '../../auth/application/auth.service';
 import { CommentQueryRepository } from '../../comments/repositories/comment.query.repository';
@@ -14,11 +15,12 @@ import { OutputDto } from '../../../core/types/dto.types';
 import { matchedData } from 'express-validator';
 import { PostsSearchParams, RequestQuery, ResponseBody } from '../types/transaction.types';
 
+@injectable()
 export class PostsController {
     constructor(
-        private postsService: PostsService,
-        private authService: AuthService,
-        private commentQueryRepository: CommentQueryRepository
+        @inject(PostsService) private postsService: PostsService,
+        @inject(AuthService) private authService: AuthService,
+        @inject(CommentQueryRepository) private commentQueryRepository: CommentQueryRepository
     ) {}
 
     async createComment(

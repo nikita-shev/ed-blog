@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { jwtService } from '../../../../core/application/jwt.service';
-import { authService } from '../../../../composition-root';
 import { resultCodeToHttpException } from '../../../../core/utils/result-object/utils/resultCodeToHttpException';
+import { container } from '../../../../composition-root';
+import { AuthService } from '../../application/auth.service';
 
 export async function checkRefreshTokenMiddleware(req: Request, res: Response, next: NextFunction) {
+    const authService = container.get(AuthService);
     const token: string = req.cookies.refreshToken;
 
     const tokenVerificationResult = jwtService.checkToken(token);

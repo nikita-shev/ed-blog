@@ -1,7 +1,9 @@
+import { injectable } from 'inversify';
 import { sessionsCollection } from '../../../db/db.config';
 import { SessionWithId, UserSessionData } from '../types/sessions.types';
 import { RefreshTokenPayload } from '../application/auth.service';
 
+@injectable()
 export class AuthRepository {
     async addUserSession(data: UserSessionData): Promise<boolean> {
         const result = await sessionsCollection.insertOne(data);

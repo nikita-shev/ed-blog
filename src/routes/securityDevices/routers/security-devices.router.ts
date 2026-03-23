@@ -1,8 +1,10 @@
 import { Router } from 'express';
+import { container } from '../../../composition-root';
 import { checkRefreshTokenMiddleware } from '../../auth/middlewares/authorizations/check-refresh-token.middleware';
-import { securityDevicesController } from '../../../composition-root';
+import { SecurityDevicesController } from '../controller/security-devices.controller';
 
 export const securityDevices = Router();
+const securityDevicesController = container.get(SecurityDevicesController);
 
 securityDevices
     .get(

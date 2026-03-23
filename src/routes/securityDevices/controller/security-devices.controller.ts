@@ -1,10 +1,12 @@
+import { inject, injectable } from 'inversify';
 import { SecurityDevicesService } from '../application/security-devices.service';
 import { Request, Response } from 'express';
 import { DevicesOutputDto } from '../dto/devices.dto';
 import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 
+@injectable()
 export class SecurityDevicesController {
-    constructor(private securityDevicesService: SecurityDevicesService) {}
+    constructor(@inject(SecurityDevicesService) private securityDevicesService: SecurityDevicesService) {}
 
     async getDevices(req: Request, res: Response<DevicesOutputDto[]>) {
         const result = await this.securityDevicesService.getActiveDevices(req.cookies.refreshToken);

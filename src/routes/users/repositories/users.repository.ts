@@ -1,7 +1,9 @@
+import { injectable } from 'inversify';
 import { userCollection } from '../../../db/db.config';
 import { PasswordRecovery, User } from '../types/users.types';
 import { ObjectId, WithId } from 'mongodb';
 
+@injectable()
 export class UsersRepository {
     async findUser(loginOrEmail: string): Promise<WithId<User> | null> {
         return userCollection.findOne({

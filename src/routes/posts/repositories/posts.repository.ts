@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { postCollection } from '../../../db/db.config';
 import { createFilter } from '../routers/utils/createFilter';
 import { Post, PostWithId } from '../types/posts.types';
@@ -8,6 +9,7 @@ import { SortDirection } from '../../../core/types/sorting.types';
 import { PostsSearchParams } from '../types/transaction.types';
 import { PostFilters } from '../types/filter.types';
 
+@injectable()
 export class PostsRepository {
     async findPosts(
         params: PostsSearchParams,

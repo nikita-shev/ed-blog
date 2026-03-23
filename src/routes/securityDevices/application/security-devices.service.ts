@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { jwtService } from '../../../core/application/jwt.service';
 import { UserSessionData } from '../../auth/types/sessions.types';
@@ -12,8 +13,9 @@ import { mapToDevicesOutput } from '../routers/mappers/mapToDevicesOutput';
 import { SecurityDevicesRepository } from '../repositories/security-devices.repository';
 import { authRepository } from '../../../composition-root';
 
+@injectable()
 export class SecurityDevicesService {
-    constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
+    constructor(@inject(SecurityDevicesRepository) private securityDevicesRepository: SecurityDevicesRepository) {}
 
     // TODO: getActiveDevices -> queryRepo ???
     async getActiveDevices(token: string): Promise<ServiceDto<DevicesOutputDto[]>> {
@@ -38,7 +40,7 @@ export class SecurityDevicesService {
     async terminateSpecifiedDeviceSession(token: string, deviceId: string): Promise<ServiceDto> {
         const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
 
-        // TODO: authRepository -> authService
+        // TODO: authRepository -> authService && add ioc
         const foundSession = await authRepository.findSessionByDeviceId(deviceId);
         // if (!foundSession) return createResultObject(null, ResultStatus.NotFound);
         if (!foundSession) return notFoundResult.create();

@@ -7,9 +7,11 @@ import { queryValidationMiddlewares } from '../middlewares/validation/blog.query
 import { BlogSortFields } from '../types/sorting.types';
 import { blogIdValidation } from '../middlewares/validation/blog.params.validation-middlewares';
 import { postInputWithoutBlogIdDtoValidation } from '../../posts/middlewares/validation/post.input-dto.validation-middlewares';
-import { blogsController } from '../../../composition-root';
+import { container } from '../../../composition-root';
+import { BlogsController } from '../controller/blogs.controller';
 
 export const blogsRouter = Router();
+const blogsController = container.get(BlogsController);
 
 blogsRouter
     .get(

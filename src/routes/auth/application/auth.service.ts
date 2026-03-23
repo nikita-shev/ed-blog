@@ -1,6 +1,7 @@
+import { inject, injectable } from 'inversify';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { usersRepository, usersService } from '../../../composition-root';
+import { usersRepository } from '../../../composition-root';
 import { jwtService } from '../../../core/application/jwt.service';
 import {
     badRequestResult,
@@ -24,10 +25,11 @@ import { UserSessionData } from '../types/sessions.types';
 import { AuthRepository } from '../repositories/auth.repository';
 import { UsersService } from '../../users/application/users.service';
 
+@injectable()
 export class AuthService {
     constructor(
-        private authRepository: AuthRepository,
-        private usersService: UsersService
+        @inject(AuthRepository) private authRepository: AuthRepository,
+        @inject(UsersService) private usersService: UsersService
     ) {}
 
     // TODO: rename "checkUser"
@@ -124,7 +126,7 @@ export class AuthService {
     async registrationUser(
         credentials: RegistrationInputDto
     ): Promise<ServiceDto<boolean> | ServiceDto<null>> {
-        const result = await usersService.createUser(credentials);
+        const result = await this.usersService.createUser(credentials);
 
         if (typeof result === 'object') {
             // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [result]);
@@ -132,7 +134,7 @@ export class AuthService {
         }
 
         // send email
-        const userInfo = await usersService.getUserInfo(result);
+        const userInfo = await this.usersService.getUserInfo(result);
         if (!userInfo.data) return userInfo;
 
         const emailSendingStatus = await emailAdapter.sendEmail(
@@ -142,7 +144,7 @@ export class AuthService {
         );
 
         if (!emailSendingStatus.data) {
-            await usersService.deleteUser(result);
+            await this.usersService.deleteUser(result);
             // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
             //     { field: 'login', message: 'Problems registering. Please try again later.' }
             // ]);
@@ -156,7 +158,7 @@ export class AuthService {
     }
 
     async confirmRegistrationUser(code: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
-        return usersService.confirmUser(code);
+        return this.usersService.confirmUser(code);
     }
 
     async resendEmail(email: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {

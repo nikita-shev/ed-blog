@@ -1,10 +1,12 @@
+import { inject, injectable } from 'inversify';
 import { CommentsService } from '../application/comments.service';
 import { Request, Response } from 'express';
 import { CommentInputDto, CommentOutputDto } from '../dto/comment.dto';
 import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 
+@injectable()
 export class CommentsController {
-    constructor(private commentsService: CommentsService) {}
+    constructor(@inject(CommentsService) private commentsService: CommentsService) {}
 
     async getComment(req: Request<{ id: string }>, res: Response<CommentOutputDto>) {
         const result = await this.commentsService.getCommentById(req.params.id);

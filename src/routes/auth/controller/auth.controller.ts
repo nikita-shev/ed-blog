@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { AuthService } from '../application/auth.service';
 import { Request, Response } from 'express';
 import { AuthInputDto, AuthOutputDto, RegistrationInputDto, TokenOutputDto } from '../dto/auth.dto';
@@ -6,8 +7,9 @@ import { resultCodeToHttpException } from '../../../core/utils/result-object/uti
 import { add } from 'date-fns';
 import { PATHS } from '../../../core/constants/paths';
 
+@injectable()
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(@inject(AuthService) private authService: AuthService) {}
 
     async checkUser(req: Request<{}, {}, AuthInputDto>, res: Response<TokenOutputDto>) {
         const serviceInfo: ServiceInfo = { device: req.get('User-agent'), ip: req.ip };

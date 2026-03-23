@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import bcrypt from 'bcrypt';
 import { UserInputDto } from '../dto/users.dto';
 import { UsersRepository } from '../repositories/users.repository';
@@ -14,8 +15,9 @@ import { ServiceDto } from '../../../core/utils/result-object/types/result-objec
 import { convertFullUserInfo } from '../routers/mappers/mapToUserOutput';
 import { WithId } from 'mongodb';
 
+@injectable()
 export class UsersService {
-    constructor(private usersRepository: UsersRepository) {}
+    constructor(@inject(UsersRepository) private usersRepository: UsersRepository) {}
 
     async createUser(credentials: UserInputDto): Promise<Error | string> {
         const isUniqueLogin = await this.usersRepository.findUserByLogin(credentials.login);
@@ -116,7 +118,7 @@ export class UsersService {
         return successResult.create(result);
     }
 
-    async deleteRecoveryCode(userId: string): Promise<any> {
+    async deleteRecoveryCode(userId: string): Promise<ServiceDto<boolean>> {
         const result = await this.usersRepository.deleteRecoveryCode(userId);
 
         return successResult.create(result);

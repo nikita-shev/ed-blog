@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId } from 'mongodb';
 import { commentCollection } from '../../../db/db.config';
 import { ResultStatus } from '../../../core/utils/result-object/types/result-object.types';
@@ -5,6 +6,8 @@ import { Comment, CommentWithId } from '../types/comments.types';
 import { CommentInputDto } from '../dto/comment.dto';
 
 //TODO: fix null -> Promise<CommentWithId | null> -> во всех местах
+
+@injectable()
 export class CommentRepository {
     async getCommentById(id: string): Promise<CommentWithId | null> {
         return await commentCollection.findOne({ _id: new ObjectId(id) });

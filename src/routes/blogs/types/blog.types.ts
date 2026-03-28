@@ -7,5 +7,8 @@ export interface Blog {
     createdAt: string;
     isMembership: boolean;
 }
+export type IBlog = Blog; // TODO: временно
 
 export type BlogWithId = WithId<Blog>;
+
+// TODO: как лучше: Blog или IBlog?

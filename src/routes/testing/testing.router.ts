@@ -1,18 +1,18 @@
 import { Request, Response, Router } from 'express';
-import { HttpStatus } from '../../core/constants/http-statuses';
+import { BlogModel } from '../blogs/schema/schema';
 import {
-    blogCollection,
     commentCollection,
     postCollection,
     sessionsCollection,
     userCollection
 } from '../../db/db.config';
+import { HttpStatus } from '../../core/constants/http-statuses';
 
 export const testingRouter = Router();
 
 testingRouter.delete('/all-data', async (req: Request, res: Response) => {
     await Promise.all([
-        blogCollection.deleteMany(),
+        BlogModel.deleteMany(),
         postCollection.deleteMany(),
         userCollection.deleteMany(),
         commentCollection.deleteMany(),

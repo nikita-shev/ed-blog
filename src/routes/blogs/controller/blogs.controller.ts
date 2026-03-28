@@ -1,29 +1,31 @@
-import { inject, injectable } from 'inversify';
-import { BlogsService } from '../application/blogs.service';
 import { Request, Response } from 'express';
+import { inject, injectable } from 'inversify';
+import { matchedData } from 'express-validator';
+import { BlogsService } from '../application/blogs.service';
 import { BlogInputDto, BlogOutputDto } from '../dto';
 import { HttpStatus } from '../../../core/constants/http-statuses';
-import { convertBlogData, mapToBlogOutput } from '../routers/mappers/mapToBlogOutput';
 import { PostInputWithoutBlogIdDto } from '../../posts/dto/post.input-dto';
 import { PostOutputDto } from '../../posts/dto';
 import { convertPostData, mapToPostOutput } from '../../posts/routers/mappers/mapToPostOutput';
 import { BlogsSearchParams, RequestQuery, ResponseBody } from '../types/transaction.types';
-import { matchedData } from 'express-validator';
 import { PostsSearchParams } from '../../posts/types/transaction.types';
 import { OutputDto } from '../../../core/types/dto.types';
+import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
+import { createPaginationResult } from '../../../core/utils/pagination-result/pagination-result';
 
 @injectable()
 export class BlogsController {
     constructor(@inject(BlogsService) private blogsService: BlogsService) {}
 
     async createBlog(req: Request<{}, {}, BlogInputDto>, res: Response<BlogOutputDto>) {
-        const newBlog = await this.blogsService.createBlog(req.body);
+        const result = await this.blogsService.createBlog(req.body);
+        const status = resultCodeToHttpException(result.status);
 
-        if (!newBlog) {
-            return res.sendStatus(HttpStatus.NotFound);
+        if (!result.data) {
+            return res.sendStatus(status);
         }
 
-        res.status(HttpStatus.Created).send(convertBlogData(newBlog)); // TODO: convertBlogData
+        res.status(status).send(result.data);
     }
 
     async createPostForSpecificBlog(
@@ -41,22 +43,24 @@ export class BlogsController {
 
     async deleteBlog(req: Request<{ id: string }>, res: Response) {
         const result = await this.blogsService.deleteBlog(req.params.id);
+        const status = resultCodeToHttpException(result.status);
 
         if (!result) {
-            res.sendStatus(HttpStatus.NotFound);
+            return res.sendStatus(status);
         }
 
-        res.sendStatus(HttpStatus.NoContent);
+        res.sendStatus(status);
     }
 
     async getBlog(req: Request<{ id: string }>, res: Response<BlogOutputDto>) {
-        const blog = await this.blogsService.getBlogById(req.params.id);
+        const result = await this.blogsService.getBlogById(req.params.id);
+        const status = resultCodeToHttpException(result.status);
 
-        if (!blog) {
-            return res.sendStatus(HttpStatus.NotFound);
+        if (!result.data) {
+            return res.sendStatus(status);
         }
 
-        res.status(HttpStatus.Success).send(convertBlogData(blog)); // TODO: convertBlogData
+        res.status(status).send(result.data);
     }
 
     async getBlogs(req: RequestQuery, res: ResponseBody) {
@@ -64,30 +68,31 @@ export class BlogsController {
             locations: ['query'],
             includeOptionals: true
         });
-
-        const data = await this.blogsService.getBlogs(sanitizedQuery);
-        const result = mapToBlogOutput(data, {
+        const { data, status } = await this.blogsService.getBlogs(sanitizedQuery);
+        const result = createPaginationResult(data, {
             pageSize: sanitizedQuery.pageSize,
             pageNumber: sanitizedQuery.pageNumber
         });
 
-        res.status(HttpStatus.Success).send(result);
+        res.status(resultCodeToHttpException(status)).send(result);
     }
 
     async getPostsForSpecificBlog(
         req: Request<{ blogId: string }, {}, {}, PostsSearchParams>,
         res: Response<OutputDto<PostOutputDto>>
     ) {
-        const blog = await this.blogsService.getBlogById(req.params.blogId);
+        // TODO: исправаить метод после постов
+        const result = await this.blogsService.getBlogById(req.params.blogId);
+        const status = resultCodeToHttpException(result.status);
 
-        if (!blog) {
-            return res.sendStatus(HttpStatus.NotFound);
+        if (!result.data) {
+            return res.sendStatus(status);
         }
 
-        const sanitizedQuery = matchedData<PostsSearchParams>(req, {
-            locations: ['query'],
-            includeOptionals: true
-        });
+        // const sanitizedQuery = matchedData<PostsSearchParams>(req, {
+        //     locations: ['query'],
+        //     includeOptionals: true
+        // });
 
         // TODO tests
         const t: PostsSearchParams = {
@@ -98,21 +103,24 @@ export class BlogsController {
         };
 
         const data = await this.blogsService.getPostsForBlog(req.params.blogId, t);
-        const result = mapToPostOutput(data, {
+        const resultWithPagination = mapToPostOutput(data, {
             pageNumber: t.pageNumber,
             pageSize: t.pageSize
         });
 
-        res.status(HttpStatus.Success).send(result);
+        res.status(HttpStatus.Success).send(resultWithPagination);
     }
 
     async updateBlog(req: Request<{ id: string }, {}, BlogInputDto>, res: Response) {
         const result = await this.blogsService.updateBlog(req.params.id, req.body);
+        const status = resultCodeToHttpException(result.status);
 
-        if (!result) {
-            return res.sendStatus(HttpStatus.NotFound);
+        if (!result.data) {
+            return res.sendStatus(status);
         }
 
-        res.sendStatus(HttpStatus.NoContent);
+        res.sendStatus(status);
     }
 }
+
+// TODO: исправить getPostsForSpecificBlog и createPostForSpecificBlog после фикса постов

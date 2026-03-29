@@ -22,5 +22,5 @@ export interface ServiceDto<T = null> {
     data: T;
 }
 
-// TODO: не совсем Nullable тип
+// TODO: не совсем Nullable тип. delete?
 export type NullableServiceDto<T> = Promise<ServiceDto<null> | ServiceDto<T>>; // NullableResultObject

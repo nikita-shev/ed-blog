@@ -11,5 +11,6 @@ export interface Comment {
     postId: string;
     createdAt: string;
 }
+export type IComment = Comment; // TODO: временно
 
 export type CommentWithId = WithId<Comment>;

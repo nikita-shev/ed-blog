@@ -7,15 +7,15 @@ import {
     successResult
 } from '../../../core/utils/result-object';
 import { mapBlogData } from '../routers/mappers/mapBlogData';
-import { PaginationResult, SearchResult } from '../../../core/types/dto.types';
+import { PaginationResult } from '../../../core/types/dto.types';
 import { BlogsSearchParams } from '../types/transaction.types';
 import { BlogInputDto, BlogOutputDto } from '../dto';
 import { PostInputWithoutBlogIdDto } from '../../posts/dto/post.input-dto';
-import { PostWithId } from '../../posts/types/posts.types';
 import { PostsSearchParams } from '../../posts/types/transaction.types';
 import { BlogsRepository } from '../repositories/blogs.repository';
 import { PostsService } from '../../posts/application/posts.service';
 import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
+import { PostOutputDto } from '../../posts/dto';
 
 @injectable()
 export class BlogsService {
@@ -35,7 +35,7 @@ export class BlogsService {
     async getBlogById(id: string): Promise<ServiceDto<BlogOutputDto | null>> {
         const blog = await this.blogsRepository.findBlogById(id);
 
-        return blog ? successResult.create(mapBlogData(blog)) : notFoundResult.create(null);
+        return blog ? successResult.create(mapBlogData(blog)) : notFoundResult.create(null); // TODO: fix null all project
     }
 
     async createBlog(data: BlogInputDto): Promise<ServiceDto<BlogOutputDto | null>> {
@@ -76,23 +76,21 @@ export class BlogsService {
     async getPostsForBlog(
         blogId: string,
         params: PostsSearchParams // TODO: rename
-    ): Promise<SearchResult<PostWithId>> {
+    ): Promise<ServiceDto<PaginationResult<PostOutputDto>>> {
         return this.postsService.findPosts(params, { blogId });
     }
 
     async createPostForBlog(
         blogId: string,
         data: PostInputWithoutBlogIdDto
-    ): Promise<PostWithId | null> {
+    ): Promise<ServiceDto<PostOutputDto | null>> {
         const { title, shortDescription, content } = data;
-        const blog = await this.getBlogById(blogId);
+        const result = await this.getBlogById(blogId);
 
-        if (!blog.data) {
-            return null;
+        if (!result.data) {
+            return notFoundResult.create(null);
         }
 
         return this.postsService.createPost({ blogId, title, shortDescription, content });
     }
 }
-
-// TODO: исправить getPostsForBlog и createPostForBlog после фикса постов

@@ -1,47 +1,19 @@
 import { injectable } from 'inversify';
-import { ObjectId } from 'mongodb';
-import { commentCollection } from '../../../db/db.config';
-import { ResultStatus } from '../../../core/utils/result-object/types/result-object.types';
-import { Comment, CommentWithId } from '../types/comments.types';
-import { CommentInputDto } from '../dto/comment.dto';
-
-//TODO: fix null -> Promise<CommentWithId | null> -> во всех местах
+import { CommentDocument, CommentModel } from '../schema/schema';
 
 @injectable()
-export class CommentRepository {
-    async getCommentById(id: string): Promise<CommentWithId | null> {
-        return await commentCollection.findOne({ _id: new ObjectId(id) });
-
-        // const result = await commentCollection.findOne({ _id: new ObjectId(id) });
-
-        // if (!result) {
-        //     return createResultObject(null, ResultStatus.NotFound);
-        // }
-        //
-        // return createResultObject(result);
+export class CommentsRepository {
+    async save(document: CommentDocument): Promise<void> {
+        await document.save();
     }
 
-    async createComment(comment: Comment): Promise<string> {
-        const insertResult = await commentCollection.insertOne(comment);
-
-        // return createResultObject(insertResult.insertedId.toString());
-        return insertResult.insertedId.toString();
-    }
-
-    async updateComment(id: string, content: CommentInputDto): Promise<boolean> {
-        const result = await commentCollection.updateOne(
-            { _id: new ObjectId(id) },
-            { $set: content }
-        );
-
-        // return createResultObject(result.matchedCount === 1, ResultStatus.NoContent);
-        return result.matchedCount === 1;
+    async getCommentById(id: string): Promise<CommentDocument | null> {
+        return CommentModel.findOne({ _id: id });
     }
 
     async deleteComment(id: string): Promise<boolean> {
-        const result = await commentCollection.deleteOne({ _id: new ObjectId(id) });
+        const result = await CommentModel.deleteOne({ _id: id });
 
-        // return createResultObject(result.deletedCount === 1, ResultStatus.NoContent);
         return result.deletedCount === 1;
     }
 }

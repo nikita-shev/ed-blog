@@ -1,68 +1,69 @@
 import { inject, injectable } from 'inversify';
-import { CommentRepository } from '../repositories/comment.repository';
-import { convertCommentData } from '../routers/mappers/mapToCommentOutput';
+import { CommentsRepository } from '../repositories/comment.repository';
+import { CommentModel } from '../schema/schema';
 import {
+    createdResult,
     forbiddenResult,
     noContentResult,
     notFoundResult,
     successResult
 } from '../../../core/utils/result-object';
-import { NullableServiceDto } from '../../../core/utils/result-object/types/result-object.types';
+import { mapCommentData } from '../routers/mappers/mapCommentData';
+import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 import { CommentInputDto, CommentOutputDto } from '../dto/comment.dto';
+import { CommentatorInfo } from '../types/comments.types';
 
 @injectable()
 export class CommentsService {
-    constructor(@inject(CommentRepository) private commentRepository: CommentRepository) {}
+    constructor(@inject(CommentsRepository) private commentRepository: CommentsRepository) {}
 
-    async getCommentById(id: string): NullableServiceDto<CommentOutputDto> {
-        const foundComment = await this.commentRepository.getCommentById(id);
+    async getCommentById(id: string): Promise<ServiceDto<CommentOutputDto | null>> {
+        const comment = await this.commentRepository.getCommentById(id);
 
-        if (!foundComment) {
-            // return createResultObject(null, ResultStatus.NotFound);
-            return notFoundResult.create();
-        }
+        return comment ? successResult.create(mapCommentData(comment)) : notFoundResult.create();
+    }
 
-        // return createResultObject(convertCommentData(result.data));
-        return successResult.create(convertCommentData(foundComment));
+    async createComment(
+        postId: string,
+        data: { content: string; commentatorInfo: CommentatorInfo }
+    ): Promise<ServiceDto<CommentOutputDto | null>> {
+        const newComment = new CommentModel({
+            postId,
+            content: data.content,
+            commentatorInfo: data.commentatorInfo,
+            createdAt: new Date().toISOString()
+        });
+        await this.commentRepository.save(newComment);
+        const result = await this.getCommentById(newComment.id);
+
+        return result.data ? createdResult.create(result.data) : result;
     }
 
     async updateComment(
-        userID: string,
+        userId: string,
         commentId: string,
         content: CommentInputDto
-    ): NullableServiceDto<boolean> {
-        const result = await this.getCommentById(commentId); // TODO: так можно?
+    ): Promise<ServiceDto<boolean | null>> {
+        const comment = await this.commentRepository.getCommentById(commentId);
 
-        if (!result.data) {
-            return result;
-        }
+        if (!comment) return notFoundResult.create();
+        if (comment && comment.commentatorInfo.userId !== userId) return forbiddenResult.create();
 
-        if (result.data && result.data?.commentatorInfo.userId !== userID) {
-            // return createResultObject(null, ResultStatus.Forbidden);
-            return forbiddenResult.create();
-        }
+        comment.content = content.content;
+        await this.commentRepository.save(comment);
 
-        // return commentRepository.updateComment(commentId, content);
-        // return createResultObject(result.matchedCount === 1, ResultStatus.NoContent);
-        const isUpdated = await this.commentRepository.updateComment(commentId, content);
-        return noContentResult.create(isUpdated);
+        return noContentResult.create(true);
     }
 
-    async deleteComment(userID: string, commentId: string): NullableServiceDto<boolean> {
-        const result = await this.getCommentById(commentId);
+    async deleteComment(userId: string, commentId: string): Promise<ServiceDto<boolean | null>> {
+        const comment = await this.commentRepository.getCommentById(commentId);
 
-        if (!result.data) {
-            return result;
-        }
+        if (!comment) return notFoundResult.create(null);
+        if (comment && comment.commentatorInfo.userId !== userId)
+            return forbiddenResult.create(null);
 
-        if (result.data && result.data?.commentatorInfo.userId !== userID) {
-            // return createResultObject(null, ResultStatus.Forbidden);
-            return forbiddenResult.create();
-        }
+        const result = await this.commentRepository.deleteComment(commentId);
 
-        // return commentRepository.deleteComment(commentId);
-        // return createResultObject(result.deletedCount === 1, ResultStatus.NoContent);
-        const isDeleted = await this.commentRepository.deleteComment(commentId);
-        return noContentResult.create(isDeleted);
+        return noContentResult.create(result);
     }
 }

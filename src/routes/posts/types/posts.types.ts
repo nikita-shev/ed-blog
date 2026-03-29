@@ -8,5 +8,6 @@ export interface Post {
     blogName: string;
     createdAt: string;
 }
+export type IPost = Post; // TODO: временно
 
 export type PostWithId = WithId<Post>;

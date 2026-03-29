@@ -1,21 +1,21 @@
 import { injectable } from 'inversify';
+import { CommentModel } from '../schema/schema';
+import { successResult } from '../../../core/utils/result-object';
+import { createPaginationResult } from '../../../core/utils/pagination-result/pagination-result';
+import { mapCommentData } from '../routers/mappers/mapCommentData';
 import { Sort } from 'mongodb';
-import { commentCollection } from '../../../db/db.config';
-import { convertCommentData, mapToCommentOutput } from '../routers/mappers/mapToCommentOutput';
 import { SortDirection } from '../../../core/types/sorting.types';
 import { CommentsSearchParams } from '../types/transaction.types';
 import { OutputDto } from '../../../core/types/dto.types';
 import { CommentOutputDto } from '../dto/comment.dto';
+import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 
 @injectable()
 export class CommentQueryRepository {
-    private _convertCommentData = convertCommentData;
-    private _mapToCommentOutput = mapToCommentOutput;
-
     async getComments(
         postId: string,
         queryParams: CommentsSearchParams
-    ): Promise<OutputDto<CommentOutputDto>> {
+    ): Promise<ServiceDto<OutputDto<CommentOutputDto>>> {
         const { pageNumber, pageSize, sortBy, sortDirection } = queryParams;
 
         const filter = { postId: { $regex: postId, $options: 'i' } };
@@ -26,14 +26,18 @@ export class CommentQueryRepository {
         };
         const skip = (pageNumber - 1) * pageSize;
 
-        const comments = await commentCollection
-            .find(filter)
+        const comments = await CommentModel.find(filter)
             .sort(sorting)
             .skip(skip)
             .limit(pageSize)
-            .toArray();
-        const totalCount = await commentCollection.countDocuments(filter);
+            .lean();
+        const totalCount = await CommentModel.countDocuments(filter);
 
-        return this._mapToCommentOutput({ items: comments, totalCount }, { pageNumber, pageSize }); // TODO: ResultObj ???
+        const data = createPaginationResult(
+            { items: comments.map(mapCommentData), totalCount },
+            { pageNumber, pageSize }
+        );
+
+        return successResult.create(data);
     }
 }

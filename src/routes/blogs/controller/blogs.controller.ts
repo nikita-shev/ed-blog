@@ -3,10 +3,8 @@ import { inject, injectable } from 'inversify';
 import { matchedData } from 'express-validator';
 import { BlogsService } from '../application/blogs.service';
 import { BlogInputDto, BlogOutputDto } from '../dto';
-import { HttpStatus } from '../../../core/constants/http-statuses';
 import { PostInputWithoutBlogIdDto } from '../../posts/dto/post.input-dto';
 import { PostOutputDto } from '../../posts/dto';
-import { convertPostData, mapToPostOutput } from '../../posts/routers/mappers/mapToPostOutput';
 import { BlogsSearchParams, RequestQuery, ResponseBody } from '../types/transaction.types';
 import { PostsSearchParams } from '../../posts/types/transaction.types';
 import { OutputDto } from '../../../core/types/dto.types';
@@ -32,13 +30,12 @@ export class BlogsController {
         req: Request<{ blogId: string }, {}, PostInputWithoutBlogIdDto>,
         res: Response<PostOutputDto>
     ) {
-        const post = await this.blogsService.createPostForBlog(req.params.blogId, req.body);
+        const result = await this.blogsService.createPostForBlog(req.params.blogId, req.body);
+        const status = resultCodeToHttpException(result.status);
 
-        if (!post) {
-            return res.sendStatus(HttpStatus.NotFound);
-        }
+        if (!result.data) return res.sendStatus(status);
 
-        res.status(HttpStatus.Created).send(convertPostData(post)); // TODO convertPostData
+        res.status(status).send(result.data);
     }
 
     async deleteBlog(req: Request<{ id: string }>, res: Response) {
@@ -81,11 +78,10 @@ export class BlogsController {
         req: Request<{ blogId: string }, {}, {}, PostsSearchParams>,
         res: Response<OutputDto<PostOutputDto>>
     ) {
-        // TODO: исправаить метод после постов
-        const result = await this.blogsService.getBlogById(req.params.blogId);
-        const status = resultCodeToHttpException(result.status);
+        const blogSearchResult = await this.blogsService.getBlogById(req.params.blogId);
+        const status = resultCodeToHttpException(blogSearchResult.status);
 
-        if (!result.data) {
+        if (!blogSearchResult.data) {
             return res.sendStatus(status);
         }
 
@@ -102,13 +98,13 @@ export class BlogsController {
             sortDirection: req.query.sortDirection || 'desc'
         };
 
-        const data = await this.blogsService.getPostsForBlog(req.params.blogId, t);
-        const resultWithPagination = mapToPostOutput(data, {
+        const postsSearchResult = await this.blogsService.getPostsForBlog(req.params.blogId, t);
+        const result = createPaginationResult(postsSearchResult.data, {
             pageNumber: t.pageNumber,
             pageSize: t.pageSize
         });
 
-        res.status(HttpStatus.Success).send(resultWithPagination);
+        res.status(resultCodeToHttpException(postsSearchResult.status)).send(result);
     }
 
     async updateBlog(req: Request<{ id: string }, {}, BlogInputDto>, res: Response) {
@@ -122,5 +118,3 @@ export class BlogsController {
         res.sendStatus(status);
     }
 }
-
-// TODO: исправить getPostsForSpecificBlog и createPostForSpecificBlog после фикса постов

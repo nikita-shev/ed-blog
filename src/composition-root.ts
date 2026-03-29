@@ -11,7 +11,7 @@ import { PostsRepository } from './routes/posts/repositories/posts.repository';
 import { PostsService } from './routes/posts/application/posts.service';
 import { PostsController } from './routes/posts/controller/posts.controller';
 import { CommentQueryRepository } from './routes/comments/repositories/comment.query.repository';
-import { CommentRepository } from './routes/comments/repositories/comment.repository';
+import { CommentsRepository } from './routes/comments/repositories/comment.repository';
 import { CommentsService } from './routes/comments/application/comments.service';
 import { CommentsController } from './routes/comments/controller/comments.controller';
 import { BlogsRepository } from './routes/blogs/repositories/blogs.repository';
@@ -46,7 +46,7 @@ container.bind(PostsController).to(PostsController);
 
 // comments
 container.bind(CommentQueryRepository).to(CommentQueryRepository);
-container.bind(CommentRepository).to(CommentRepository);
+container.bind(CommentsRepository).to(CommentsRepository);
 container.bind(CommentsService).to(CommentsService);
 container.bind(CommentsController).to(CommentsController);
 

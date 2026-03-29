@@ -1,95 +1,97 @@
 import { inject, injectable } from 'inversify';
+import { PostModel } from '../schema/schema';
+import {
+    createdResult,
+    noContentResult,
+    notFoundResult,
+    successResult
+} from '../../../core/utils/result-object';
+import { mapPostData } from '../routers/mappers/mapPostData';
 import { PostsRepository } from '../repositories/posts.repository';
-import { Post, PostWithId } from '../types/posts.types';
-import { PostInputDto } from '../dto';
+import { PostInputDto, PostOutputDto } from '../dto';
 import { PostsSearchParams } from '../types/transaction.types';
-import { SearchResult } from '../../../core/types/dto.types';
+import { PaginationResult } from '../../../core/types/dto.types';
 import { PostFilters } from '../types/filter.types';
-import { NullableServiceDto } from '../../../core/utils/result-object/types/result-object.types';
-import { createdResult, notFoundResult } from '../../../core/utils/result-object';
-import { Comment, CommentatorInfo, CommentWithId } from '../../comments/types/comments.types';
+import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
+import { CommentatorInfo } from '../../comments/types/comments.types';
 import { CommentOutputDto } from '../../comments/dto/comment.dto';
-import { CommentRepository } from '../../comments/repositories/comment.repository';
+import { CommentsService } from '../../comments/application/comments.service';
 
 @injectable()
 export class PostsService {
     constructor(
         @inject(PostsRepository) private postsRepository: PostsRepository,
-        @inject(CommentRepository) private commentRepository: CommentRepository
+        @inject(CommentsService) private commentsService: CommentsService
     ) {}
 
     async findPosts(
         params: PostsSearchParams, // TODO: rename
         filteringParams?: PostFilters // TODO: rename
-    ): Promise<SearchResult<PostWithId>> {
-        return this.postsRepository.findPosts(params, filteringParams);
+    ): Promise<ServiceDto<PaginationResult<PostOutputDto>>> {
+        const { items: posts, totalCount } = await this.postsRepository.findPosts(
+            params,
+            filteringParams
+        );
+
+        return successResult.create({ items: posts.map(mapPostData), totalCount });
     }
 
-    async findPostById(id: string): Promise<PostWithId | null> {
-        return this.postsRepository.findPostById(id);
+    async findPostById(id: string): Promise<ServiceDto<PostOutputDto | null>> {
+        const result = await this.postsRepository.findPostById(id);
+
+        return result ? successResult.create(mapPostData(result)) : notFoundResult.create(null);
     }
 
-    async createPost(data: PostInputDto): Promise<PostWithId | null> {
+    async createPost(data: PostInputDto): Promise<ServiceDto<PostOutputDto | null>> {
         const { blogId, title, shortDescription, content } = data;
-        const newPost: Post = {
+        const newPost = new PostModel({
             blogName: 'Test',
             createdAt: new Date().toISOString(),
             title,
             shortDescription,
             content,
             blogId
-        };
-        const postId = await this.postsRepository.createPost(newPost);
+        });
+        await this.postsRepository.save(newPost);
+        const result = await this.findPostById(newPost.id);
 
-        return this.findPostById(postId); // TODO: 50/50
+        return result.data ? createdResult.create(result.data) : result;
     }
 
-    async updatePost(id: string, data: PostInputDto): Promise<boolean> {
-        return this.postsRepository.updatePost(id, data);
+    async updatePost(id: string, data: PostInputDto): Promise<ServiceDto<boolean | null>> {
+        const post = await this.postsRepository.findPostById(id);
+
+        if (!post) return notFoundResult.create();
+
+        post.title = data.title;
+        post.shortDescription = data.shortDescription;
+        post.content = data.content;
+        post.blogId = data.blogId;
+        await this.postsRepository.save(post);
+
+        return noContentResult.create(true);
     }
 
-    async deletePost(id: string): Promise<boolean> {
-        return this.postsRepository.deletePost(id);
+    async deletePost(id: string): Promise<ServiceDto<boolean | null>> {
+        const result = await this.postsRepository.deletePost(id);
+
+        return result ? noContentResult.create(result) : notFoundResult.create();
     }
 
     async createComment(
         postId: string,
         content: string,
         commentatorInfo: CommentatorInfo
-    ): Promise<NullableServiceDto<CommentOutputDto>> {
-        const post = await this.findPostById(postId);
+    ): Promise<ServiceDto<CommentOutputDto | null>> {
+        const result = await this.findPostById(postId);
+        if (!result.data) return notFoundResult.create(null);
 
-        if (!post) {
-            // return createResultObject(null, ResultStatus.NotFound);
-            return notFoundResult.create();
-        }
-
-        const newComment: Comment = {
+        const resultOfCreatingComment = await this.commentsService.createComment(result.data.id, {
             content,
-            commentatorInfo,
-            postId,
-            createdAt: new Date().toISOString()
-        };
-        // TODO: commentRepository -> commentService; fix constructor
-        const commentId = await this.commentRepository.createComment(newComment); // TODO: именование. как правильно?
-        const foundComment = await this.commentRepository.getCommentById(commentId); // TODO: избыточно?
+            commentatorInfo
+        });
+        if (!resultOfCreatingComment.data) return notFoundResult.create(null);
 
-        if (!foundComment) {
-            // return createResultObject(null, ResultStatus.NotFound);
-            return notFoundResult.create();
-        }
-
-        // return createResultObject(convertCommentData(result.data), ResultStatus.Created);
-        return createdResult.create(convertCommentData(foundComment));
+        return resultOfCreatingComment;
     }
-}
-
-// TODO: move, rename?
-export function convertCommentData(comment: CommentWithId): CommentOutputDto {
-    return {
-        id: String(comment._id),
-        content: comment.content,
-        commentatorInfo: comment.commentatorInfo,
-        createdAt: comment.createdAt
-    };
 }

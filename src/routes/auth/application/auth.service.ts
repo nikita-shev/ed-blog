@@ -1,11 +1,11 @@
 import { inject, injectable } from 'inversify';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { usersRepository } from '../../../composition-root';
 import { jwtService } from '../../../core/application/jwt.service';
 import {
     badRequestResult,
     noContentResult,
+    notFoundResult,
     successResult,
     unauthorizedResult
 } from '../../../core/utils/result-object';
@@ -20,7 +20,7 @@ import {
     ServiceDto
 } from '../../../core/utils/result-object/types/result-object.types';
 import { CurrentUser, ServiceInfo } from '../types/auth.types';
-import { messagesForEmail, emailAdapter } from '../../../adapters/email-adapter';
+import { emailAdapter, messagesForEmail } from '../../../adapters/email-adapter';
 import { UserSessionData } from '../types/sessions.types';
 import { AuthRepository } from '../repositories/auth.repository';
 import { UsersService } from '../../users/application/users.service';
@@ -37,18 +37,19 @@ export class AuthService {
         credentials: AuthInputDto,
         serviceInfo?: ServiceInfo
     ): NullableServiceDto<AuthorizationTokens> {
-        console.log(credentials, serviceInfo); // TODO: delete
+        const userSearchResult = await this.usersService.getUserByLoginOrEmail(
+            credentials.loginOrEmail
+        );
 
-        const userData = await usersRepository.findUser(credentials.loginOrEmail); // TODO: repo or service?
-        // if (!userData) return createResultObject(null, ResultStatus.Unauthorized);
-        if (!userData) return unauthorizedResult.create();
+        if (!userSearchResult.data) return unauthorizedResult.create(null);
 
-        const isUser = await bcrypt.compare(credentials.password, userData.password);
-        // if (!isUser) return createResultObject(null, ResultStatus.Unauthorized);
-        if (!isUser) return unauthorizedResult.create();
+        const user = userSearchResult.data; // TODO: fix ?
+        const isUser = await bcrypt.compare(credentials.password, user.accountData.password);
+
+        if (!isUser) return unauthorizedResult.create(null);
 
         // ======>
-        const userId = userData._id.toString();
+        const userId = userSearchResult.data.id;
         const userDevice = serviceInfo?.device ?? '';
         const userIp = serviceInfo?.ip ?? '';
 
@@ -110,41 +111,51 @@ export class AuthService {
 
     // TODO: Q: authBearerMiddleware проверил токен, но findUserById всегда будет возвращать null. Как быть?
     async getInfoAboutUser(userId: string): NullableServiceDto<CurrentUser> {
-        const result = await usersRepository.findUserById(userId);
+        // const result = await usersRepository.findUserById(userId);
+        const result = await this.usersService.getUserById(userId);
 
-        if (!result) {
-            // return createResultObject(null, ResultStatus.Unauthorized);
-            return unauthorizedResult.create();
-        }
+        if (!result.data) return unauthorizedResult.create(null);
 
-        const user: CurrentUser = { email: result.email, login: result.login, userId };
+        const user: CurrentUser = {
+            email: result.data.accountData.email,
+            login: result.data.accountData.login,
+            userId
+        };
 
-        // return createResultObject(user);
         return successResult.create(user);
     }
 
     async registrationUser(
         credentials: RegistrationInputDto
     ): Promise<ServiceDto<boolean> | ServiceDto<null>> {
-        const result = await this.usersService.createUser(credentials);
+        const userCreationResult = await this.usersService.createUser(credentials);
 
-        if (typeof result === 'object') {
-            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [result]);
-            return badRequestResult.create(null, 'Bad request', [result]);
+        // if (typeof result === 'object') {
+        //     // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [result]);
+        //     return badRequestResult.create(null, 'Bad request', [result]);
+        // }
+        if (!userCreationResult.data) {
+            return badRequestResult.create(
+                null,
+                userCreationResult.errorMessage as string,
+                userCreationResult.extensions
+            );
         }
 
         // send email
-        const userInfo = await this.usersService.getUserInfo(result);
-        if (!userInfo.data) return userInfo;
+        const userSearchResult = await this.usersService.getUserById(userCreationResult.data);
+        if (!userSearchResult.data) return notFoundResult.create(null);
 
         const emailSendingStatus = await emailAdapter.sendEmail(
-            userInfo.data.email,
+            userSearchResult.data.accountData.email,
             'register',
-            messagesForEmail.completeRegistration(userInfo.data.emailConfirmation.confirmationCode)
+            messagesForEmail.completeRegistration(
+                userSearchResult.data.emailConfirmation.confirmationCode
+            )
         );
 
         if (!emailSendingStatus.data) {
-            await this.usersService.deleteUser(result);
+            await this.usersService.deleteUser(userCreationResult.data);
             // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
             //     { field: 'login', message: 'Problems registering. Please try again later.' }
             // ]);
@@ -157,28 +168,22 @@ export class AuthService {
         return noContentResult.create(emailSendingStatus.data);
     }
 
-    async confirmRegistrationUser(code: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
+    async confirmRegistrationUser(code: string): Promise<ServiceDto<boolean | null>> {
         return this.usersService.confirmUser(code);
     }
 
     async resendEmail(email: string): Promise<ServiceDto<boolean> | ServiceDto<null>> {
-        const user = await usersRepository.findUser(email);
-        if (!user)
-            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
-            //     { field: 'email', message: 'email not found' }
-            // ]);
+        const userSearchResult = await this.usersService.getUserByLoginOrEmail(email);
+
+        if (!userSearchResult.data) {
             return badRequestResult.create(null, 'Bad request', [
                 { field: 'email', message: 'email not found' } // TODO: duplicate
             ]);
+        }
 
-        const { emailConfirmation } = user;
-        if (emailConfirmation.isConfirmed) {
-            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
-            //     {
-            //         field: 'email',
-            //         message: 'email verified'
-            //     }
-            // ]);
+        const user = userSearchResult.data;
+
+        if (user.emailConfirmation.isConfirmed) {
             return badRequestResult.create(null, 'Bad request', [
                 {
                     field: 'email',
@@ -188,21 +193,15 @@ export class AuthService {
         }
 
         const newCode = crypto.randomUUID();
-        await usersRepository.updateConfirmationCode(user._id, newCode); // TODO: обработать результат?
+        await this.usersService.updateConfirmationCode(user.id, newCode); // TODO: обработать результат?
 
         const emailSendingStatus = await emailAdapter.sendEmail(
-            user.email,
+            user.accountData.email,
             'resend',
             messagesForEmail.completeRegistration(newCode)
         );
         if (!emailSendingStatus.data) {
             // TODO: как такое тестировать, когда есть мока?
-            // return createResultObject(null, ResultStatus.BadRequest, 'Bad request', [
-            //     {
-            //         field: 'resend',
-            //         message: 'Problems with email confirmation. Please try again later.'
-            //     }
-            // ]);
             return badRequestResult.create(null, 'Bad request', [
                 {
                     field: 'resend',
@@ -211,7 +210,6 @@ export class AuthService {
             ]);
         }
 
-        // return createResultObject(emailSendingStatus.data, ResultStatus.NoContent);
         return noContentResult.create(emailSendingStatus.data);
     }
 
@@ -266,19 +264,15 @@ export class AuthService {
     }
 
     async passwordRecovery(email: string): Promise<ServiceDto<boolean>> {
-        const userInfo = await this.usersService.getUserByLoginOrEmail(email);
+        const userSearchResult = await this.usersService.getUserByLoginOrEmail(email);
 
-        console.log(email, userInfo.data); // TODO: delete
+        if (!userSearchResult.data) return noContentResult.create();
 
-        if (!userInfo.data) return noContentResult.create();
-
-        const { data: code } = await this.usersService.createPasswordCode(
-            userInfo.data._id.toString()
-        );
+        const { data: code } = await this.usersService.createPasswordCode(userSearchResult.data.id);
 
         // TODO: необходимо удалять код, если email сломался?
         const emailSendingStatus = await emailAdapter.sendEmail(
-            userInfo.data.email,
+            userSearchResult.data.accountData.email,
             'Password recovery',
             messagesForEmail.passwordRecovery(code)
         );
@@ -304,7 +298,7 @@ export class AuthService {
             return badRequestResult.create(null, 'Bad request');
         }
 
-        const userId = userSearchResult.data._id.toString();
+        const userId = userSearchResult.data.id;
         const hashPassword = await bcrypt.hash(newPassword, 12); // TODO: to service
         const passwordUpdateResult = await this.usersService.updatePassword(userId, hashPassword);
         if (!passwordUpdateResult.data) return badRequestResult.create(null, 'Bad request');

@@ -1,44 +1,43 @@
 import { WithId } from 'mongodb';
 
-export interface BasicUser {
+// TODO: IBasicUser -> UserData ?
+export interface IBasicUser {
     login: string;
     email: string;
 }
 
-export interface User extends BasicUser {
-    password: string;
-    createdAt: string;
-    emailConfirmation: EmailConfirmation;
-    passwordRecovery?: PasswordRecovery;
-}
-
-export type UserWithoutPassword = Omit<User, 'password'>;
-export type UserWithId = WithId<UserWithoutPassword>; // TODO: add With & Without password
-
-// new user types ===>
-
-interface AccountData {
-    login: string;
-    email: string;
+export interface IAccountData extends IBasicUser {
     password: string;
     createdAt: string;
 }
 
-interface EmailConfirmation {
+export interface IEmailConfirmation {
     confirmationCode: string;
     expirationDate: string;
     isConfirmed: boolean;
 }
 
-export interface PasswordRecovery {
+export interface IPasswordRecovery {
     code: string;
     expirationDate: string;
 }
 
-// TODO: исправить название и переделать старые типы на новые
-// interface UserData {
-//     accountData: AccountData;
-//     emailConfirmation: EmailConfirmation;
-// }
-//
-// type UserDataWithId = WithId<UserData>;
+export interface IUser {
+    accountData: IAccountData;
+    emailConfirmation: IEmailConfirmation;
+    passwordRecovery?: IPasswordRecovery;
+}
+
+export interface IUserForService extends IUser {
+    id: string;
+}
+
+// ===================== TODO: fix types >>>
+
+type TAccountDataWithoutPassword = Omit<IAccountData, 'password'>;
+export interface IUserWithoutPassword {
+    accountData: TAccountDataWithoutPassword;
+    emailConfirmation: IEmailConfirmation;
+    passwordRecovery?: IPasswordRecovery;
+}
+export type TUserWithoutPasswordWithId = WithId<IUserWithoutPassword>;

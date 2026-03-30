@@ -22,8 +22,6 @@ import { AuthService } from './routes/auth/application/auth.service';
 import { AuthController } from './routes/auth/controller/auth.controller';
 
 // TODO: delete exports
-export const usersRepository = new UsersRepository(); // delete export
-export const usersService = new UsersService(usersRepository); // use for tests, delete export
 export const authRepository = new AuthRepository(); // delete export
 
 export const container = new Container();

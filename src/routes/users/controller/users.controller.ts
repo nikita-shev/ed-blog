@@ -1,12 +1,13 @@
+import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
+import { matchedData } from 'express-validator';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepository } from '../repositories/users.query.repository';
-import { Request, Response } from 'express';
+import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
 import { UserInputDto, UserOutputDto } from '../dto/users.dto';
 import { ErrorsMessages } from '../../../core/types/error.types';
 import { HttpStatus } from '../../../core/constants/http-statuses';
 import { RequestQuery, ResponseBody, UsersSearchParams } from '../types/transaction.types';
-import { matchedData } from 'express-validator';
 
 @injectable()
 export class UsersController {
@@ -19,19 +20,22 @@ export class UsersController {
         req: Request<{}, {}, UserInputDto>,
         res: Response<UserOutputDto | ErrorsMessages>
     ) {
-        const result = await this.usersService.createUser(req.body);
+        const userCreationResult = await this.usersService.createUser(req.body);
+        const status = resultCodeToHttpException(userCreationResult.status);
 
-        if (typeof result === 'object') {
-            return res.status(HttpStatus.BadRequest).send({ errorsMessages: [result] });
+        if (!userCreationResult.data) {
+            return res.status(status).send({ errorsMessages: userCreationResult.extensions });
         }
 
-        const user = await this.usersQueryRepository.getUserById(result);
+        const userSearchResult = await this.usersQueryRepository.getUserById(
+            userCreationResult.data
+        );
 
-        if (!user) {
-            return res.sendStatus(HttpStatus.NotFound);
+        if (!userSearchResult.data) {
+            return res.sendStatus(resultCodeToHttpException(userCreationResult.status));
         }
 
-        res.status(HttpStatus.Created).send(user);
+        res.status(HttpStatus.Created).send(userSearchResult.data);
     }
 
     async getUsers(req: RequestQuery, res: ResponseBody) {
@@ -39,18 +43,18 @@ export class UsersController {
             locations: ['query'],
             includeOptionals: true
         });
-        const users = await this.usersQueryRepository.getUsers(sanitizedQuery);
+        const userSearchResult = await this.usersQueryRepository.getUsers(sanitizedQuery);
+        const status = resultCodeToHttpException(userSearchResult.status);
 
-        res.status(HttpStatus.Success).send(users);
+        res.status(status).send(userSearchResult.data);
     }
 
     async deleteUser(req: Request<{ id: string }>, res: Response) {
         const result = await this.usersService.deleteUser(req.params.id);
+        const status = resultCodeToHttpException(result.status);
 
-        if (!result) {
-            return res.sendStatus(HttpStatus.NotFound);
-        }
+        if (!result.data) return res.sendStatus(status);
 
-        res.sendStatus(HttpStatus.NoContent);
+        res.sendStatus(status);
     }
 }

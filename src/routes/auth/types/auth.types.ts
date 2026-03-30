@@ -1,6 +1,6 @@
-import { BasicUser } from '../../users/types/users.types';
+import { IBasicUser } from '../../users/types/users.types';
 
-export interface CurrentUser extends BasicUser {
+export interface CurrentUser extends IBasicUser {
     userId: string;
 }
 

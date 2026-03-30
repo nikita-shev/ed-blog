@@ -1,28 +1,28 @@
+import { Sort } from 'mongodb';
 import { injectable } from 'inversify';
-import { userCollection } from '../../../db/db.config';
-import { convertUserData, mapToUserOutput } from '../routers/mappers/mapToUserOutput';
-import { ObjectId, Sort } from 'mongodb';
+import { UserModel } from '../schema/schema';
+import { notFoundResult, successResult } from '../../../core/utils/result-object';
+import { createPaginationResult } from '../../../core/utils/pagination-result/pagination-result';
+import { mapUserDataForDto } from '../routers/mappers/mapUserData';
 import { UserOutputDto } from '../dto/users.dto';
 import { UsersSearchParams } from '../types/transaction.types';
 import { SortDirection } from '../../../core/types/sorting.types';
 import { OutputDto } from '../../../core/types/dto.types';
+import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
 
 @injectable()
 export class UsersQueryRepository {
-    private _convertUserData = convertUserData;
-    private _mapToUserOutput = mapToUserOutput;
-
-    async getUserById(id: string): Promise<UserOutputDto | null> {
-        const user = await userCollection.findOne({ _id: new ObjectId(id) });
+    async getUserById(id: string): Promise<ServiceDto<UserOutputDto | null>> {
+        const user = await UserModel.findOne({ _id: id });
 
         if (!user) {
-            return null;
+            return notFoundResult.create(null);
         }
 
-        return this._convertUserData(user);
+        return successResult.create(mapUserDataForDto(user));
     }
 
-    async getUsers(queryParams: UsersSearchParams): Promise<OutputDto<UserOutputDto>> {
+    async getUsers(queryParams: UsersSearchParams): Promise<ServiceDto<OutputDto<UserOutputDto>>> {
         const { pageNumber, pageSize, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } =
             queryParams;
 
@@ -41,14 +41,14 @@ export class UsersQueryRepository {
         };
         const skip = (pageNumber - 1) * pageSize;
 
-        const users = await userCollection
-            .find(filter)
-            .sort(sorting)
-            .skip(skip)
-            .limit(pageSize)
-            .toArray();
-        const totalCount = await userCollection.countDocuments(filter);
+        const users = await UserModel.find(filter).sort(sorting).skip(skip).limit(pageSize).lean();
+        const totalCount = await UserModel.countDocuments(filter);
 
-        return this._mapToUserOutput({ items: users, totalCount }, { pageNumber, pageSize });
+        return successResult.create(
+            createPaginationResult(
+                { items: users.map(mapUserDataForDto), totalCount },
+                { pageNumber, pageSize }
+            )
+        );
     }
 }

@@ -10,7 +10,7 @@ export class UsersRepository {
     //TODO: или разделить на два отдельных метода: findUserByLogin и findUserByEmail ? (support)
     async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserDocument | null> {
         return UserModel.findOne({
-            $or: [{ login: loginOrEmail }, { email: loginOrEmail }]
+            $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }]
         });
     }
 

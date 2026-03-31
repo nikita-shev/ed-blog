@@ -1,60 +1,57 @@
 import { inject, injectable } from 'inversify';
-import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
+import { SessionModel } from '../schema/schema';
+import { RefreshTokenPayload } from '../../auth/application/auth.service';
+import { SecurityDevicesRepository } from '../repositories/security-devices.repository';
 import { jwtService } from '../../../core/application/jwt.service';
-import { UserSessionData } from '../../auth/types/sessions.types';
 import {
     forbiddenResult,
     noContentResult,
     notFoundResult,
     successResult
 } from '../../../core/utils/result-object';
+import { mapSession, mapToDevicesOutput } from '../routers/mappers/mapToDevicesOutput';
+import { ServiceDto } from '../../../core/utils/result-object/types/result-object.types';
+import { ISessionForService, IUserSessionData } from '../types/sessions.types';
 import { DevicesOutputDto } from '../dto/devices.dto';
-import { mapToDevicesOutput } from '../routers/mappers/mapToDevicesOutput';
-import { SecurityDevicesRepository } from '../repositories/security-devices.repository';
-import { authRepository } from '../../../composition-root';
 
 @injectable()
 export class SecurityDevicesService {
-    constructor(@inject(SecurityDevicesRepository) private securityDevicesRepository: SecurityDevicesRepository) {}
+    constructor(
+        @inject(SecurityDevicesRepository)
+        private securityDevicesRepository: SecurityDevicesRepository
+    ) {}
 
     // TODO: getActiveDevices -> queryRepo ???
     async getActiveDevices(token: string): Promise<ServiceDto<DevicesOutputDto[]>> {
-        const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
+        const { data: payload } = jwtService.decode<Omit<IUserSessionData, 'device' | 'ip'>>(token);
         const result = await this.securityDevicesRepository.findActiveDevices(payload.userId);
 
-        // return createResultObject(mapToDevicesOutput(result)); // TODO: Что делать если девайсов нет?
         return successResult.create(mapToDevicesOutput(result)); // TODO: Что делать если девайсов нет?
     }
 
     async terminateAllThirdPartySessions(token: string): Promise<ServiceDto<boolean>> {
-        const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
-        const result = await this.securityDevicesRepository.terminateAllThirdPartySessions(
+        const { data: payload } = jwtService.decode<Omit<IUserSessionData, 'device' | 'ip'>>(token);
+        const result = await this.securityDevicesRepository.deleteAllThirdPartySessions(
             payload.userId,
             payload.deviceId
         );
 
-        // return createResultObject(result, ResultStatus.NoContent);
         return noContentResult.create(result);
     }
 
     async terminateSpecifiedDeviceSession(token: string, deviceId: string): Promise<ServiceDto> {
-        const { data: payload } = jwtService.decode<Omit<UserSessionData, 'device' | 'ip'>>(token);
+        const { data: payload } = jwtService.decode<Omit<IUserSessionData, 'device' | 'ip'>>(token);
+        const session = await this.securityDevicesRepository.findSessionByDeviceId(deviceId);
 
-        // TODO: authRepository -> authService && add ioc
-        const foundSession = await authRepository.findSessionByDeviceId(deviceId);
-        // if (!foundSession) return createResultObject(null, ResultStatus.NotFound);
-        if (!foundSession) return notFoundResult.create();
+        if (!session) return notFoundResult.create();
 
-        const deletedResult = await this.securityDevicesRepository.terminateSpecifiedDeviceSession(
-            payload.userId,
-            deviceId
-        );
+        const resultOfDeletion =
+            await this.securityDevicesRepository.terminateSpecifiedDeviceSession(
+                payload.userId,
+                deviceId
+            );
 
-        // return createResultObject(
-        //     null,
-        //     deletedResult ? ResultStatus.NoContent : ResultStatus.Forbidden
-        // );
-        return deletedResult ? noContentResult.create() : forbiddenResult.create();
+        return resultOfDeletion ? noContentResult.create() : forbiddenResult.create();
 
         // const foundSession = await authRepository.findSessionByDeviceId(payload.userId, deviceId);
         //
@@ -69,6 +66,75 @@ export class SecurityDevicesService {
         //     null,
         //     deletedResult ? ResultStatus.NoContent : ResultStatus.NotFound
         // );
+    }
+
+    async createUserSession(
+        refreshToken: string,
+        device: string,
+        userIp: string
+    ): Promise<ServiceDto<boolean>> {
+        const payload = jwtService.decode<RefreshTokenPayload>(refreshToken);
+        const { deviceId, userId, iat, exp } = payload.data;
+
+        const userSession = new SessionModel({
+            deviceId,
+            userId,
+            device,
+            ip: userIp,
+            iat: new Date(iat).toISOString(),
+            exp: new Date(exp).toISOString()
+        });
+        await this.securityDevicesRepository.save(userSession);
+
+        return successResult.create(true);
+    }
+
+    async getSessionByDevice(
+        userId: string,
+        device: string,
+        ip: string
+    ): Promise<ServiceDto<ISessionForService | null>> {
+        const session = await this.securityDevicesRepository.findSessionByDevice(
+            userId,
+            device,
+            ip
+        );
+
+        if (!session) return notFoundResult.create();
+
+        return successResult.create(mapSession(session));
+    }
+
+    async getSessionByFilter(
+        filter: Partial<IUserSessionData>
+    ): Promise<ServiceDto<ISessionForService | null>> {
+        const session = await this.securityDevicesRepository.findSessionByFilter(filter);
+
+        if (!session) return notFoundResult.create();
+
+        return successResult.create(mapSession(session));
+    }
+
+    async deleteSession(deviceId: string): Promise<ServiceDto<boolean | null>> {
+        const result = await this.securityDevicesRepository.deleteSession(deviceId);
+
+        return result ? successResult.create(true) : notFoundResult.create();
+    }
+
+    async replaceUserSession(refreshToken: string): Promise<ServiceDto<boolean | null>> {
+        const { data: payload } = jwtService.decode<RefreshTokenPayload>(refreshToken);
+        const session = await this.securityDevicesRepository.findSessionByFilter({
+            userId: payload.userId,
+            deviceId: payload.deviceId
+        });
+
+        if (!session) return notFoundResult.create();
+
+        session.iat = new Date(payload.iat).toISOString();
+        session.exp = new Date(payload.exp).toISOString();
+        await this.securityDevicesRepository.save(session);
+
+        return successResult.create(true);
     }
 }
 

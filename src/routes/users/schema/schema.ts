@@ -23,9 +23,9 @@ const PasswordRecoverySchema = new Schema<IPasswordRecovery>({
 });
 
 const UserSchema = new Schema<IUser>({
-    accountData: [AccountDataSchema],
-    emailConfirmation: [EmailConfirmationSchema],
-    passwordRecovery: [PasswordRecoverySchema]
+    accountData: AccountDataSchema,
+    emailConfirmation: EmailConfirmationSchema,
+    passwordRecovery: PasswordRecoverySchema
 });
 
 export const UserModel = model<IUser, UserModel>('users', UserSchema);

@@ -1,8 +1,8 @@
+import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 import { SecurityDevicesService } from '../application/security-devices.service';
-import { Request, Response } from 'express';
-import { DevicesOutputDto } from '../dto/devices.dto';
 import { resultCodeToHttpException } from '../../../core/utils/result-object/utils/resultCodeToHttpException';
+import { DevicesOutputDto } from '../dto/devices.dto';
 
 @injectable()
 export class SecurityDevicesController {

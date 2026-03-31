@@ -11,7 +11,7 @@ const CommentatorInfoSchema = new Schema<CommentatorInfo>({
 
 const CommentSchema = new Schema<IComment>({
     content: { type: String, required: true },
-    commentatorInfo: [CommentatorInfoSchema],
+    commentatorInfo: CommentatorInfoSchema,
     postId: { type: String, required: true },
     createdAt: { type: String, required: true }
 });

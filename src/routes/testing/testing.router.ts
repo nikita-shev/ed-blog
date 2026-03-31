@@ -3,7 +3,7 @@ import { BlogModel } from '../blogs/schema/schema';
 import { PostModel } from '../posts/schema/schema';
 import { CommentModel } from '../comments/schema/schema';
 import { UserModel } from '../users/schema/schema';
-import { sessionsCollection } from '../../db/db.config';
+import { SessionModel } from '../securityDevices/schema/schema';
 import { HttpStatus } from '../../core/constants/http-statuses';
 
 export const testingRouter = Router();
@@ -14,7 +14,7 @@ testingRouter.delete('/all-data', async (req: Request, res: Response) => {
         PostModel.deleteMany(),
         UserModel.deleteMany(),
         CommentModel.deleteMany(),
-        sessionsCollection.deleteMany()
+        SessionModel.deleteMany()
     ]);
 
     res.sendStatus(HttpStatus.NoContent);

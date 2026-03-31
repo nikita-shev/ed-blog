@@ -1,12 +1,10 @@
 import { Collection, MongoClient } from 'mongodb';
 import mongoose from 'mongoose';
-import { Session } from '../routes/auth/types/sessions.types';
 import { RateLimitDto } from '../core/application/rate-limit.service';
 
 const mongoURL = process.env.MONGO_URL;
 
 let client: MongoClient;
-export let sessionsCollection: Collection<Session>;
 export let rateLimitCollection: Collection<RateLimitDto>;
 // TODO: rename collections: blogCollection => BlogCollection or BlogModelClass
 
@@ -30,7 +28,6 @@ export async function runDB(dbUrl = mongoURL) {
         client = new MongoClient(dbUrl);
         const db = client.db();
 
-        sessionsCollection = db.collection<Session>('sessions');
         rateLimitCollection = db.collection<RateLimitDto>('rate-limit');
 
         // await client.connect();

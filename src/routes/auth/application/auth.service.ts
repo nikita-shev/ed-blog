@@ -21,15 +21,15 @@ import {
 } from '../../../core/utils/result-object/types/result-object.types';
 import { CurrentUser, ServiceInfo } from '../types/auth.types';
 import { emailAdapter, messagesForEmail } from '../../../adapters/email-adapter';
-import { UserSessionData } from '../types/sessions.types';
-import { AuthRepository } from '../repositories/auth.repository';
+import { IUserSessionData } from '../../securityDevices/types/sessions.types';
 import { UsersService } from '../../users/application/users.service';
+import { SecurityDevicesService } from '../../securityDevices/application/security-devices.service';
 
 @injectable()
 export class AuthService {
     constructor(
-        @inject(AuthRepository) private authRepository: AuthRepository,
-        @inject(UsersService) private usersService: UsersService
+        @inject(UsersService) private usersService: UsersService,
+        @inject(SecurityDevicesService) private securityDevicesService: SecurityDevicesService
     ) {}
 
     // TODO: rename "checkUser"
@@ -53,29 +53,23 @@ export class AuthService {
         const userDevice = serviceInfo?.device ?? '';
         const userIp = serviceInfo?.ip ?? '';
 
-        const lastSession = await this.authRepository.findSessionByDevice(
+        const sessionSearchResult = await this.securityDevicesService.getSessionByDevice(
             userId,
             userDevice,
             userIp
         );
+        // if (!sessionSearchResult.data) return notFoundResult.create();
 
+        const lastSession = sessionSearchResult.data;
         if (lastSession) {
+            // TODO: delete if()
             const { deviceId } = lastSession;
 
             const accessToken = jwtService.createToken({ userId }, { expiresIn: '10s' });
             const refreshToken = jwtService.createToken({ userId, deviceId }, { expiresIn: '20s' });
-            const decodeResult = jwtService.decode<RefreshTokenPayload>(refreshToken.data);
 
-            await this.authRepository.replaceUserSession({
-                ...decodeResult.data,
-                iat: new Date(decodeResult.data.iat).toISOString(),
-                exp: new Date(decodeResult.data.exp).toISOString()
-            });
+            await this.securityDevicesService.replaceUserSession(refreshToken.data);
 
-            // return createResultObject({
-            //     accessToken: accessToken.data,
-            //     refreshToken: refreshToken.data
-            // });
             return successResult.create({
                 accessToken: accessToken.data,
                 refreshToken: refreshToken.data
@@ -89,20 +83,8 @@ export class AuthService {
             { expiresIn: '20s' }
         );
 
-        const payload = jwtService.decode<RefreshTokenPayload>(refreshToken.data); // TODO: Fix "any"
-        const d = {
-            // TODO: fix types, names, move
-            device: userDevice,
-            ip: userIp,
-            iat: new Date(payload.data.iat).toISOString(),
-            exp: new Date(payload.data.exp).toISOString()
-        };
-        await this.authRepository.addUserSession({ ...payload.data, ...d }); // TODO: Check if everything is completed?
+        await this.securityDevicesService.createUserSession(refreshToken.data, userDevice, userIp);
 
-        // return createResultObject({
-        //     accessToken: accessToken.data,
-        //     refreshToken: refreshToken.data
-        // });
         return successResult.create({
             accessToken: accessToken.data,
             refreshToken: refreshToken.data
@@ -214,25 +196,28 @@ export class AuthService {
     }
 
     // TODO: move sessions???
-    async findSession(token: RefreshToken): Promise<ServiceDto<boolean>> {
-        const { data: payload } = jwtService.decode<UserSessionData>(token);
-        const result = await this.authRepository.findSession(payload);
+    async findSession(token: RefreshToken): Promise<ServiceDto<boolean | null>> {
+        const { data: payload } = jwtService.decode<IUserSessionData>(token);
+        const result = await this.securityDevicesService.getSessionByFilter({
+            userId: payload.userId,
+            deviceId: payload.deviceId,
+            iat: new Date(payload.iat).toISOString()
+        });
 
         // return createResultObject(
         //     Boolean(result),
         //     Boolean(result) ? ResultStatus.Success : ResultStatus.Unauthorized
         // );
-        return Boolean(result)
-            ? successResult.create(Boolean(result))
-            : unauthorizedResult.create(Boolean(result));
+        return Boolean(result.data) ? successResult.create(true) : unauthorizedResult.create();
     }
 
-    async deleteSession(token: RefreshToken): Promise<ServiceDto<boolean>> {
+    async deleteSession(token: RefreshToken): Promise<ServiceDto<boolean | null>> {
         const { data } = jwtService.decode<RefreshTokenPayload>(token);
-        const result = await this.authRepository.deleteSession(data.deviceId);
+        const result = await this.securityDevicesService.deleteSession(data.deviceId);
 
-        // return createResultObject(result, ResultStatus.NoContent);
-        return noContentResult.create(result);
+        if (!result.data) return notFoundResult.create();
+
+        return noContentResult.create(result.data);
     }
 
     async replaceRefreshToken(
@@ -246,17 +231,8 @@ export class AuthService {
             { expiresIn: '20s' }
         );
 
-        const result = jwtService.decode<RefreshTokenPayload>(refreshToken.data);
-        await this.authRepository.replaceUserSession({
-            ...result.data,
-            iat: new Date(result.data.iat).toISOString(),
-            exp: new Date(result.data.exp).toISOString()
-        });
+        await this.securityDevicesService.replaceUserSession(refreshToken.data);
 
-        // return createResultObject({
-        //     accessToken: accessToken.data,
-        //     refreshToken: refreshToken.data
-        // });
         return successResult.create({
             accessToken: accessToken.data,
             refreshToken: refreshToken.data
